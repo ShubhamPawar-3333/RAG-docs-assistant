@@ -9,6 +9,11 @@ from src.rag.chunking import (
     DocumentChunker,
     chunk_documents,
 )
+from src.rag.vectorstore import (
+    VectorStore,
+    VectorStoreError,
+    create_vector_store,
+)
 
 __all__ = [
     # Loaders
@@ -19,4 +24,8 @@ __all__ = [
     "ChunkingStrategy",
     "DocumentChunker",
     "chunk_documents",
+    # Vector Store
+    "VectorStore",
+    "VectorStoreError",
+    "create_vector_store",
 ]
