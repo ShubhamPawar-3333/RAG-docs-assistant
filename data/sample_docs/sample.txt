@@ -1,0 +1,15 @@
+Sample Text Document
+
+This is a plain text document used for testing the text loader.
+
+The RAG Documentation Assistant can process:
+1. PDF files
+2. Markdown files
+3. Plain text files
+
+This allows users to upload various document formats and ask questions about them.
+
+Key Features:
+- Semantic search using vector embeddings
+- Fast retrieval with ChromaDB
+- Accurate answers using Gemini LLM
