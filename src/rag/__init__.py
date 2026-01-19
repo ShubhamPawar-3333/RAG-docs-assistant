@@ -14,6 +14,11 @@ from src.rag.vectorstore import (
     VectorStoreError,
     create_vector_store,
 )
+from src.rag.embeddings import (
+    EmbeddingsManager,
+    get_embeddings,
+    list_available_models,
+)
 
 __all__ = [
     # Loaders
@@ -28,4 +33,8 @@ __all__ = [
     "VectorStore",
     "VectorStoreError",
     "create_vector_store",
+    # Embeddings
+    "EmbeddingsManager",
+    "get_embeddings",
+    "list_available_models",
 ]
