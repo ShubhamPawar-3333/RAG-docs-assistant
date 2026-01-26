@@ -17,7 +17,20 @@ from src.rag.vectorstore import (
 from src.rag.embeddings import (
     EmbeddingsManager,
     get_embeddings,
-    list_available_models,
+    list_available_models as list_embedding_models,
+)
+from src.rag.retrieval import (
+    Retriever,
+    RetrievalResult,
+    RetrieverFactory,
+    create_retriever,
+)
+from src.rag.llm import (
+    LLMManager,
+    LLMProvider,
+    get_llm,
+    generate_response,
+    list_available_models as list_llm_models,
 )
 
 __all__ = [
@@ -36,5 +49,16 @@ __all__ = [
     # Embeddings
     "EmbeddingsManager",
     "get_embeddings",
-    "list_available_models",
+    "list_embedding_models",
+    # Retrieval
+    "Retriever",
+    "RetrievalResult",
+    "RetrieverFactory",
+    "create_retriever",
+    # LLM
+    "LLMManager",
+    "LLMProvider",
+    "get_llm",
+    "generate_response",
+    "list_llm_models",
 ]
