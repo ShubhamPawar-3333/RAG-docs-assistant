@@ -32,6 +32,12 @@ from src.rag.llm import (
     generate_response,
     list_available_models as list_llm_models,
 )
+from src.rag.pipeline import (
+    RAGPipeline,
+    RAGPipelineBuilder,
+    create_rag_pipeline,
+    DEFAULT_RAG_PROMPT,
+)
 
 __all__ = [
     # Loaders
@@ -61,4 +67,9 @@ __all__ = [
     "get_llm",
     "generate_response",
     "list_llm_models",
+    # Pipeline
+    "RAGPipeline",
+    "RAGPipelineBuilder",
+    "create_rag_pipeline",
+    "DEFAULT_RAG_PROMPT",
 ]
