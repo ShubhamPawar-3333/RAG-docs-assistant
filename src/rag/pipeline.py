@@ -121,7 +121,7 @@ class RAGPipeline:
         return self._chain
     
     def _build_chain(self):
-        """Build the LCEL chain."""
+        """Build the LCEL chain with optional tracing."""
         # Create prompt template
         prompt = ChatPromptTemplate.from_template(self.prompt_template)
         
@@ -134,7 +134,17 @@ class RAGPipeline:
         # Build the chain
         chain = prompt | llm | output_parser
         
-        logger.info("Built LCEL RAG chain")
+        # Add Langfuse tracing if available
+        try:
+            from src.llmops.langfuse_tracer import create_traced_chain, is_langfuse_enabled
+            if is_langfuse_enabled():
+                chain = create_traced_chain(chain, trace_name="rag-pipeline")
+                logger.info("Built LCEL RAG chain with Langfuse tracing")
+            else:
+                logger.info("Built LCEL RAG chain (Langfuse not configured)")
+        except ImportError:
+            logger.info("Built LCEL RAG chain (Langfuse not available)")
+        
         return chain
     
     def _format_docs(self, docs: list) -> str:
