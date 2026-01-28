@@ -49,6 +49,19 @@ class Settings(BaseSettings):
     temperature: float = Field(default=0.3, alias="TEMPERATURE")
     max_tokens: int = Field(default=2048, alias="MAX_TOKENS")
 
+    # API Settings
+    api_host: str = Field(default="0.0.0.0", alias="API_HOST")
+    api_port: int = Field(default=8000, alias="API_PORT")
+    cors_origins: list = Field(
+        default=["http://localhost:3000", "http://localhost:8501"],
+        alias="CORS_ORIGINS"
+    )
+
+    @property
+    def environment(self) -> str:
+        """Get the environment name."""
+        return self.app_env
+
     # Paths
     @property
     def project_root(self) -> Path:
