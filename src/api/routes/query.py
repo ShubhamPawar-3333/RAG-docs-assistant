@@ -93,24 +93,36 @@ async def query_documents(request: QueryRequest):
 @router.post("/query/stream")
 async def stream_query(request: QueryRequest):
     """
-    Stream query response.
+    Stream query response using Server-Sent Events (SSE).
     
     Returns a streaming response with chunks of the answer
-    as they are generated.
+    as they are generated. Format is SSE-compatible.
     """
     try:
         logger.info(f"Streaming query: {request.question[:50]}...")
         
         pipeline = get_pipeline(request.collection_name, request.top_k)
         
-        async def generate() -> AsyncGenerator[str, None]:
-            """Generate response chunks."""
-            for chunk in pipeline.stream(request.question):
-                yield chunk
+        async def generate():
+            """Generate SSE-formatted response chunks."""
+            try:
+                for chunk in pipeline.stream(request.question):
+                    # SSE format: data: <content>\n\n
+                    yield f"data: {chunk}\n\n"
+                # Signal completion
+                yield "data: [DONE]\n\n"
+            except Exception as e:
+                logger.error(f"Stream error: {e}")
+                yield f"data: [ERROR] {str(e)}\n\n"
         
         return StreamingResponse(
             generate(),
-            media_type="text/plain",
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            }
         )
         
     except Exception as e:
@@ -119,3 +131,4 @@ async def stream_query(request: QueryRequest):
             status_code=500,
             detail={"error": "StreamError", "message": str(e)}
         )
+

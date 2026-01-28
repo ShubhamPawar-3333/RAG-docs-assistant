@@ -11,6 +11,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.routes import query, ingest, health
+from src.api.middleware.errors import (
+    ErrorHandlerMiddleware,
+    RequestLoggingMiddleware,
+    RateLimitMiddleware,
+)
 from config.settings import settings
 
 # Configure logging
@@ -55,6 +60,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add custom middleware (order matters - first added = last executed)
+app.add_middleware(ErrorHandlerMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=60)
 
 # Include routers
 app.include_router(health.router, tags=["Health"])
