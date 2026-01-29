@@ -1,0 +1,94 @@
+# Golden test cases for RAG evaluation
+# These represent expected Q&A pairs for your documentation
+
+tests:
+  # ============== Basic Factual Questions ==============
+  - description: "RAG definition"
+    vars:
+      question: "What is RAG?"
+    expected_keywords:
+      - retrieval
+      - augmented
+      - generation
+    expected_concept: "Explains RAG as combining retrieval with LLM generation"
+
+  - description: "ChromaDB usage"
+    vars:
+      question: "What vector database does DocuMind use?"
+    expected_keywords:
+      - ChromaDB
+      - vector
+    expected_concept: "Identifies ChromaDB as the vector store"
+
+  - description: "Embedding model"
+    vars:
+      question: "What embedding model is used?"
+    expected_keywords:
+      - all-MiniLM-L6-v2
+      - sentence-transformer
+      - HuggingFace
+    expected_concept: "Identifies the HuggingFace embedding model"
+
+  # ============== Technical Details ==============
+  - description: "Chunking strategy"
+    vars:
+      question: "How are documents chunked?"
+    expected_keywords:
+      - chunk
+      - overlap
+      - recursive
+    expected_concept: "Describes chunking with overlap for context preservation"
+
+  - description: "API endpoints"
+    vars:
+      question: "What API endpoints are available?"
+    expected_keywords:
+      - /api/query
+      - /api/ingest
+      - /health
+    expected_concept: "Lists the main API endpoints"
+
+  # ============== No-Answer Cases ==============
+  - description: "Question outside domain"
+    vars:
+      question: "What is the weather today?"
+    expected_behavior: "Admits that this information is not in the documentation"
+
+  - description: "Question about unindexed content"
+    vars:
+      question: "What is the company's stock price?"
+    expected_behavior: "Indicates information is not available in context"
+
+  # ============== Complex Questions ==============
+  - description: "Multi-part question"
+    vars:
+      question: "Explain how documents are ingested and then retrieved for answering questions"
+    expected_concepts:
+      - "Document loading and chunking"
+      - "Embedding and vector storage"
+      - "Similarity search for retrieval"
+      - "LLM generation with context"
+
+  - description: "Comparison question"
+    vars:
+      question: "What are the differences between streaming and non-streaming responses?"
+    expected_concepts:
+      - "Regular query returns complete response"
+      - "Streaming returns chunks in real-time"
+      - "SSE format for streaming"
+
+  # ============== Edge Cases ==============
+  - description: "Very short question"
+    vars:
+      question: "Embeddings?"
+    expected_behavior: "Provides helpful answer about embeddings despite short question"
+
+  - description: "Question with typos"
+    vars:
+      question: "How does retrevial work in teh system?"
+    expected_behavior: "Understands intent and answers about retrieval"
+
+  - description: "Ambiguous question"
+    vars:
+      question: "How does it work?"
+    expected_behavior: "Asks for clarification or provides general system overview"

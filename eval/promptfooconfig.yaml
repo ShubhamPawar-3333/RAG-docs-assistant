@@ -1,0 +1,131 @@
+# Promptfoo Configuration for RAG Evaluation
+# Docs: https://promptfoo.dev/docs/configuration/
+
+description: "DocuMind AI - RAG Pipeline Evaluation"
+
+# Prompt templates to test
+prompts:
+  - id: default_rag
+    label: "Default RAG Prompt"
+    raw: |
+      You are a helpful documentation assistant.
+      Answer the question based ONLY on the following context.
+      If the context doesn't contain enough information to answer, say so honestly.
+
+      Context:
+      {{context}}
+
+      Question: {{question}}
+
+      Answer:
+  
+  - id: concise_rag
+    label: "Concise RAG Prompt"
+    raw: |
+      Based on the context below, provide a brief, direct answer.
+      If the answer isn't in the context, say "I don't have that information."
+
+      Context:
+      {{context}}
+
+      Question: {{question}}
+
+      Answer (be concise):
+
+# Provider configuration
+providers:
+  - id: gemini-2.5-flash
+    config:
+      apiKey: ${GOOGLE_API_KEY}
+      temperature: 0.3
+      maxTokens: 1024
+
+# Test cases
+tests:
+  # Factual Accuracy Tests
+  - description: "Factual retrieval - basic question"
+    vars:
+      question: "What is retrieving in RAG?"
+      context: |
+        Retrieval-Augmented Generation (RAG) is a technique that enhances LLM responses
+        by retrieving relevant documents from a knowledge base before generating an answer.
+        The retrieval step uses embeddings to find semantically similar documents.
+    assert:
+      - type: contains
+        value: "retrieval"
+      - type: llm-rubric
+        value: "Answer correctly explains that RAG retrieval finds relevant documents"
+  
+  - description: "Should admit when context lacks information"
+    vars:
+      question: "What is the company's refund policy?"
+      context: |
+        This document describes the product features.
+        The product includes advanced analytics and reporting.
+    assert:
+      - type: llm-rubric
+        value: "Response indicates the information is not available in the context"
+      - type: not-contains
+        value: "30 days"
+
+  # Relevance Tests
+  - description: "Answer should be relevant to question"
+    vars:
+      question: "How do embeddings work?"
+      context: |
+        Embeddings are vector representations of text. They capture semantic meaning
+        by mapping words and sentences to high-dimensional vectors. Similar concepts
+        have vectors that are close together in the embedding space.
+    assert:
+      - type: llm-rubric
+        value: "Answer explains embeddings as vector representations capturing semantic meaning"
+      - type: relevance
+        threshold: 0.7
+
+  # Faithfulness Tests (no hallucination)
+  - description: "Should not hallucinate information"
+    vars:
+      question: "What database does the system use?"
+      context: |
+        The system uses ChromaDB for vector storage.
+        Documents are indexed using sentence-transformer embeddings.
+    assert:
+      - type: contains-any
+        value: ["ChromaDB", "Chroma"]
+      - type: not-contains
+        value: "PostgreSQL"
+      - type: llm-rubric
+        value: "Answer only mentions ChromaDB, no other databases"
+
+  # Edge Cases
+  - description: "Handle empty context gracefully"
+    vars:
+      question: "What is the API endpoint?"
+      context: ""
+    assert:
+      - type: llm-rubric
+        value: "Response indicates no information is available"
+
+  - description: "Handle very long questions"
+    vars:
+      question: "Given the complexity of modern RAG systems and the need for accurate retrieval, how does the system balance between precision and recall when retrieving documents, and what strategies are employed to ensure the most relevant chunks are selected?"
+      context: |
+        The retrieval system uses cosine similarity to find the top-k most similar documents.
+        Default k is 5, which balances coverage and precision.
+    assert:
+      - type: llm-rubric
+        value: "Answer addresses retrieval approach and top-k selection"
+
+# Evaluation metrics
+defaultTest:
+  assert:
+    - type: cost
+      threshold: 0.01  # Max $0.01 per query
+    - type: latency
+      threshold: 5000  # Max 5 seconds
+
+# Output configuration
+outputPath: ./eval/results/eval-{{timestamp}}.json
+
+# Sharing (optional)
+# sharing: true
