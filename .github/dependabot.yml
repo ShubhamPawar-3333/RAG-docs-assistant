@@ -1,0 +1,36 @@
+# Dependabot Configuration
+# Keeps dependencies up to date
+
+version: 2
+updates:
+  # Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"
+
+  # npm (for Promptfoo)
+  - package-ecosystem: "npm"
+    directory: "/eval"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "evaluation"

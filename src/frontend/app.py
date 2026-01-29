@@ -9,6 +9,7 @@ import streamlit as st
 import requests
 from typing import Optional
 import time
+import os
 
 # Page configuration
 st.set_page_config(
@@ -18,8 +19,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# API configuration
-API_BASE_URL = "http://localhost:8000"
+# API configuration - use localhost for HF Spaces (both run in same container)
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 
 # ============== Custom CSS ==============

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Start FastAPI backend in background
+echo "Starting FastAPI backend..."
+uvicorn src.api.main:app --host 0.0.0.0 --port 8000 &
+
+# Wait for API to be ready
+sleep 5
+
+# Start Streamlit frontend on HF Spaces port
+echo "Starting Streamlit frontend..."
+streamlit run src/frontend/app.py \
+    --server.port 7860 \
+    --server.address 0.0.0.0 \
+    --server.headless true \
+    --browser.gatherUsageStats false
