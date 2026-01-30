@@ -229,7 +229,72 @@ retriever = create_retriever(
 
 ---
 
-## 📋 Summary
+## � Reranking (Advanced)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    RETRIEVAL WITH RERANKING                      │
+│                                                                  │
+│  Query → Embed → Vector Search (top 20) → Rerank → Return (top 5)│
+│                                   ↓                              │
+│                          Cross-Encoder                           │
+│                          or LLM Scoring                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Why Reranking?
+
+| Stage | Model Type | Accuracy | Speed |
+|-------|------------|----------|-------|
+| Initial retrieval | Bi-encoder | Good | Very Fast |
+| Reranking | Cross-encoder | Excellent | Slower |
+
+**Bi-encoders** (embedding models) encode query and documents separately.
+**Cross-encoders** process query + document together → more accurate but slower.
+
+### Reranking Options
+
+```python
+from src.rag import create_reranker
+
+# Fast, accurate - DEFAULT
+reranker = create_reranker("cross-encoder", top_k=5)
+
+# Highest accuracy, slower
+reranker = create_reranker("llm", top_k=5)
+
+# Best of both
+reranker = create_reranker("hybrid", use_llm_refinement=True)
+```
+
+### Using with Retriever
+
+```python
+from src.rag import Retriever, create_reranker
+
+reranker = create_reranker("cross-encoder", top_k=5)
+
+retriever = Retriever(
+    vector_store=vs,
+    reranker=reranker,
+    rerank_top_n=20,  # Fetch 20 candidates, rerank to 5
+)
+
+result = retriever.retrieve("What is the refund policy?")
+# Returns top 5 after reranking
+```
+
+### Flow with Reranking
+
+```
+1. Retrieve top 20 from vector store (fast bi-encoder)
+2. Rerank with cross-encoder (more accurate scoring)
+3. Return top 5 after reranking
+```
+
+---
+
+## �📋 Summary
 
 | Component | Pattern | Purpose |
 |-----------|---------|---------|
@@ -239,3 +304,6 @@ retriever = create_retriever(
 | `Retriever` | Query Interface | Main search class |
 | `RetrieverFactory` | Factory | Manage setup complexity |
 | `create_retriever()` | Facade | Simple one-liner API |
+| `CrossEncoderReranker` | Reranker | Fast, accurate reranking |
+| `LLMReranker` | Reranker | Highest accuracy |
+| `HybridReranker` | Reranker | Combined approach |

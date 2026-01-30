@@ -25,6 +25,12 @@ from src.rag.retrieval import (
     RetrieverFactory,
     create_retriever,
 )
+from src.rag.reranking import (
+    CrossEncoderReranker,
+    LLMReranker,
+    HybridReranker,
+    create_reranker,
+)
 from src.rag.llm import (
     LLMManager,
     LLMProvider,
@@ -61,6 +67,11 @@ __all__ = [
     "RetrievalResult",
     "RetrieverFactory",
     "create_retriever",
+    # Reranking
+    "CrossEncoderReranker",
+    "LLMReranker",
+    "HybridReranker",
+    "create_reranker",
     # LLM
     "LLMManager",
     "LLMProvider",
@@ -73,3 +84,4 @@ __all__ = [
     "create_rag_pipeline",
     "DEFAULT_RAG_PROMPT",
 ]
+

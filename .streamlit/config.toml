@@ -1,15 +1,12 @@
-"""
-Streamlit Configuration
-
-Page-level configuration for the Streamlit app.
-"""
+# Streamlit Configuration - Dark Theme
 
 [theme]
 primaryColor = "#667eea"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f8f9fa"
-textColor = "#333333"
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#1a1f2e"
+textColor = "#fafafa"
 font = "sans serif"
+base = "dark"
 
 [server]
 port = 8501

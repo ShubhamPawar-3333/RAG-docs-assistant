@@ -98,6 +98,8 @@ class Retriever:
         vector_store: VectorStore,
         default_k: int = None,
         score_threshold: Optional[float] = None,
+        reranker: Optional[Any] = None,
+        rerank_top_n: int = 20,
     ):
         """
         Initialize the retriever.
@@ -106,14 +108,19 @@ class Retriever:
             vector_store: VectorStore instance to search.
             default_k: Default number of results to return.
             score_threshold: Optional minimum score for results.
+            reranker: Optional reranker instance for result refinement.
+            rerank_top_n: Number of candidates to fetch before reranking.
         """
         self.vector_store = vector_store
         self.default_k = default_k or settings.top_k_results
         self.score_threshold = score_threshold
+        self.reranker = reranker
+        self.rerank_top_n = rerank_top_n
         
         logger.info(
             f"Initialized Retriever with k={self.default_k}, "
-            f"threshold={self.score_threshold}"
+            f"threshold={self.score_threshold}, "
+            f"reranker={'enabled' if reranker else 'disabled'}"
         )
     
     def retrieve(
@@ -137,12 +144,15 @@ class Retriever:
         """
         k = k or self.default_k
         
-        logger.debug(f"Retrieving for query: '{query[:50]}...' k={k}")
+        # If reranking enabled, fetch more candidates
+        fetch_k = self.rerank_top_n if self.reranker else k
+        
+        logger.debug(f"Retrieving for query: '{query[:50]}...' k={k}, fetch_k={fetch_k}")
         
         if include_scores:
             results_with_scores = self.vector_store.similarity_search_with_score(
                 query=query,
-                k=k,
+                k=fetch_k,
                 filter=filter,
             )
             
@@ -151,19 +161,27 @@ class Retriever:
         else:
             documents = self.vector_store.similarity_search(
                 query=query,
-                k=k,
+                k=fetch_k,
                 filter=filter,
             )
             scores = None
         
+        # Apply reranking if configured
+        if self.reranker and documents:
+            rerank_result = self.reranker.rerank(query, documents, scores)
+            documents = rerank_result.documents[:k]
+            scores = rerank_result.scores[:k]
+            logger.info(f"Reranked {len(rerank_result.documents)} docs to top {k}")
+        
         result = RetrievalResult(
-            documents=documents,
-            scores=scores,
+            documents=documents[:k],
+            scores=scores[:k] if scores else None,
             query=query,
             metadata={
                 "k": k,
                 "filter": filter,
                 "include_scores": include_scores,
+                "reranked": self.reranker is not None,
             },
         )
         
