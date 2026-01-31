@@ -124,10 +124,20 @@ def query_api(question: str, collection: str, top_k: int) -> Optional[dict]:
 def ingest_files(files, collection: str) -> Optional[dict]:
     """Upload files to the API for ingestion."""
     try:
-        files_data = [
-            ("files", (f.name, f.getvalue(), f.type))
-            for f in files
-        ]
+        # Map extensions to MIME types (browsers often report wrong/empty types)
+        mime_types = {
+            ".pdf": "application/pdf",
+            ".md": "text/markdown",
+            ".markdown": "text/markdown",
+            ".txt": "text/plain",
+        }
+        
+        files_data = []
+        for f in files:
+            ext = "." + f.name.split(".")[-1].lower() if "." in f.name else ""
+            content_type = mime_types.get(ext, f.type or "application/octet-stream")
+            files_data.append(("files", (f.name, f.getvalue(), content_type)))
+        
         response = requests.post(
             f"{API_BASE_URL}/api/ingest",
             files=files_data,
