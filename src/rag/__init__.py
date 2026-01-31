@@ -31,6 +31,13 @@ from src.rag.reranking import (
     HybridReranker,
     create_reranker,
 )
+from src.rag.caching import (
+    QueryCache,
+    InMemoryCache,
+    RedisCache,
+    CacheEntry,
+    create_cache,
+)
 from src.rag.llm import (
     LLMManager,
     LLMProvider,
@@ -43,6 +50,15 @@ from src.rag.pipeline import (
     RAGPipelineBuilder,
     create_rag_pipeline,
     DEFAULT_RAG_PROMPT,
+)
+from src.rag.async_utils import (
+    AsyncBatchProcessor,
+    AsyncDocumentProcessor,
+    BatchResult,
+    RateLimiter,
+    AsyncRetry,
+    gather_with_concurrency,
+    run_async,
 )
 
 __all__ = [
@@ -72,6 +88,12 @@ __all__ = [
     "LLMReranker",
     "HybridReranker",
     "create_reranker",
+    # Caching
+    "QueryCache",
+    "InMemoryCache",
+    "RedisCache",
+    "CacheEntry",
+    "create_cache",
     # LLM
     "LLMManager",
     "LLMProvider",
@@ -83,5 +105,13 @@ __all__ = [
     "RAGPipelineBuilder",
     "create_rag_pipeline",
     "DEFAULT_RAG_PROMPT",
+    # Async Utilities
+    "AsyncBatchProcessor",
+    "AsyncDocumentProcessor",
+    "BatchResult",
+    "RateLimiter",
+    "AsyncRetry",
+    "gather_with_concurrency",
+    "run_async",
 ]
 
