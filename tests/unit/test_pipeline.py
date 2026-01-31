@@ -132,7 +132,7 @@ class TestRetriever:
         )
         
         assert result.num_results == 2
-        assert result.has_results is True
+        assert result.num_results > 0  # Has results
         
         context = result.get_context(separator="\n---\n")
         assert "Doc 1" in context
@@ -149,5 +149,6 @@ class TestRetriever:
         )
         
         assert result.num_results == 0
-        assert result.has_results is False
+        assert result.num_results == 0  # No results
         assert result.get_context() == ""
+

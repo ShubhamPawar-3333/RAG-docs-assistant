@@ -12,54 +12,60 @@ from unittest.mock import MagicMock, patch
 class TestDocumentLoaders:
     """Tests for document loader functionality."""
     
-    def test_text_loader_loads_file(self, sample_documents):
-        """Test that TextLoader can load a .txt file."""
-        from src.rag.loaders import TextLoader
+    def test_multiformat_loader_loads_txt_file(self, sample_documents):
+        """Test that MultiFormatDocumentLoader can load a .txt file."""
+        from src.rag.loaders import MultiFormatDocumentLoader
         
-        loader = TextLoader()
+        loader = MultiFormatDocumentLoader()
         txt_file = sample_documents / "sample.txt"
         
-        documents = loader.load(str(txt_file))
+        documents = loader.load_file(txt_file)
         
         assert len(documents) == 1
         assert "RAG" in documents[0].page_content
         assert documents[0].metadata["source"] == str(txt_file)
     
-    def test_markdown_loader_loads_file(self, sample_documents):
-        """Test that MarkdownLoader can load a .md file."""
-        from src.rag.loaders import MarkdownLoader
+    def test_multiformat_loader_loads_md_file(self, sample_documents):
+        """Test that MultiFormatDocumentLoader can load a .md file."""
+        from src.rag.loaders import MultiFormatDocumentLoader
         
-        loader = MarkdownLoader()
+        loader = MultiFormatDocumentLoader()
         md_file = sample_documents / "guide.md"
         
-        documents = loader.load(str(md_file))
+        documents = loader.load_file(md_file)
         
         assert len(documents) >= 1
         assert "User Guide" in documents[0].page_content
     
     def test_loader_handles_missing_file(self):
         """Test that loader raises error for missing file."""
-        from src.rag.loaders import TextLoader
+        from src.rag.loaders import MultiFormatDocumentLoader, DocumentLoaderError
         
-        loader = TextLoader()
+        loader = MultiFormatDocumentLoader()
         
-        with pytest.raises(FileNotFoundError):
-            loader.load("/nonexistent/file.txt")
+        with pytest.raises(DocumentLoaderError):
+            loader.load_file("/nonexistent/file.txt")
     
-    def test_document_loader_factory(self, sample_documents):
-        """Test the DocumentLoaderFactory selects correct loader."""
-        from src.rag.loaders import DocumentLoaderFactory
+    def test_loader_get_supported_extensions(self):
+        """Test getting supported file extensions."""
+        from src.rag.loaders import MultiFormatDocumentLoader
+        
+        extensions = MultiFormatDocumentLoader.get_supported_extensions()
+        
+        assert ".txt" in extensions
+        assert ".md" in extensions
+        assert ".pdf" in extensions
+    
+    def test_load_documents_convenience_function(self, sample_documents):
+        """Test the load_documents convenience function."""
+        from src.rag.loaders import load_documents
         
         txt_file = sample_documents / "sample.txt"
-        md_file = sample_documents / "guide.md"
         
-        # Should select TextLoader for .txt
-        txt_loader = DocumentLoaderFactory.get_loader(str(txt_file))
-        assert txt_loader is not None
+        documents = load_documents(txt_file)
         
-        # Should select MarkdownLoader for .md
-        md_loader = DocumentLoaderFactory.get_loader(str(md_file))
-        assert md_loader is not None
+        assert len(documents) >= 1
+        assert "RAG" in documents[0].page_content
 
 
 class TestChunking:
