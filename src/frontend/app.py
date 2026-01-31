@@ -90,11 +90,48 @@ st.markdown("""
 
 
 # ============== Session State ==============
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# Chat history per collection (key: collection_name, value: list of messages)
+if "chats" not in st.session_state:
+    st.session_state.chats = {}
 
 if "collection_name" not in st.session_state:
     st.session_state.collection_name = "documents"
+
+# Track when collections were last updated (for context refresh notification)
+if "collection_updated" not in st.session_state:
+    st.session_state.collection_updated = {}
+
+
+def get_current_messages():
+    """Get messages for the current collection."""
+    collection = st.session_state.collection_name
+    if collection not in st.session_state.chats:
+        st.session_state.chats[collection] = []
+    return st.session_state.chats[collection]
+
+
+def add_message(role: str, content: str, sources: list = None):
+    """Add a message to the current collection's chat."""
+    collection = st.session_state.collection_name
+    if collection not in st.session_state.chats:
+        st.session_state.chats[collection] = []
+    
+    message = {"role": role, "content": content}
+    if sources:
+        message["sources"] = sources
+    st.session_state.chats[collection].append(message)
+
+
+def clear_current_chat():
+    """Clear chat for current collection."""
+    collection = st.session_state.collection_name
+    st.session_state.chats[collection] = []
+
+
+def mark_collection_updated(collection_name: str):
+    """Mark a collection as recently updated with new documents."""
+    import time
+    st.session_state.collection_updated[collection_name] = time.time()
 
 
 # ============== Helper Functions ==============
@@ -215,13 +252,16 @@ with st.sidebar:
                         f"✅ Ingested {result['documents_processed']} docs, "
                         f"{result['chunks_created']} chunks"
                     )
+                    # Mark collection as updated for context notification
+                    mark_collection_updated(st.session_state.collection_name)
+                    st.info("💡 Your chat context has been updated with new documents.")
                     st.balloons()
     
     st.divider()
     
     # Clear chat
     if st.button("🗑️ Clear Chat", use_container_width=True):
-        st.session_state.messages = []
+        clear_current_chat()
         st.rerun()
 
 
@@ -240,7 +280,7 @@ chat_container = st.container()
 
 # Display chat messages
 with chat_container:
-    for message in st.session_state.messages:
+    for message in get_current_messages():
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
             
@@ -260,7 +300,7 @@ with chat_container:
 # Chat input
 if prompt := st.chat_input("Ask a question about your documents..."):
     # Add user message
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    add_message("user", prompt)
     
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -281,11 +321,7 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                 st.markdown(answer)
                 
                 # Store message with sources
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": answer,
-                    "sources": sources,
-                })
+                add_message("assistant", answer, sources)
                 
                 # Show sources
                 if sources:
@@ -302,10 +338,7 @@ if prompt := st.chat_input("Ask a question about your documents..."):
             else:
                 error_msg = "Failed to get a response. Please check the API connection."
                 st.error(error_msg)
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": error_msg,
-                })
+                add_message("assistant", error_msg)
 
 
 # Footer
