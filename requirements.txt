@@ -47,3 +47,5 @@ pytest-asyncio>=0.24.0
 black>=24.0.0
 isort>=5.13.0
 mypy>=1.11.0
+# Markdown Processing (required by unstructured for .md files)
+markdown>=3.5.0

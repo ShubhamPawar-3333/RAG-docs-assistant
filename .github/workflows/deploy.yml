@@ -1,62 +1,55 @@
 # GitHub Actions Deploy Pipeline
-# Deploys to Hugging Face Spaces on merge to main
+# Syncs repository to Hugging Face Spaces on merge to main
 
-name: Deploy
+name: Deploy to Hugging Face Spaces
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
-env:
-  PYTHON_VERSION: "3.11"
-  HF_SPACE: "documind-ai"  # Change to your HF username/space
-
 jobs:
-  # ============== Deploy to HF Spaces ==============
-  deploy-hf:
-    name: Deploy to Hugging Face Spaces
+  sync-to-huggingface:
+    name: Sync to Hugging Face Spaces
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      
       - name: Prepare for HF Spaces
         run: |
-          # Copy HF-specific README
+          # Create HF-compatible README with Space metadata
           cp README_HF.md README.md
           
-          # Ensure start.sh is executable
+          # Ensure start script is executable
           chmod +x start.sh
+          
+          # Configure git
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          
+          # Commit changes if any
+          git add -A
+          git diff --staged --quiet || git commit -m "Prepare for HF Spaces deployment"
       
-      - name: Push to Hugging Face Spaces
+      - name: Push to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git remote add hf https://user:$HF_TOKEN@huggingface.co/spaces/${{ secrets.HF_USERNAME }}/documind-ai || true
-          git push hf main:main --force
-
-  # ============== Notify ==============
-  notify:
-    name: Notify
-    runs-on: ubuntu-latest
-    needs: [deploy-hf]
-    if: always()
-    
-    steps:
-      - name: Deployment Status
+          # Add HF remote
+          git remote add space https://user:$HF_TOKEN@huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ secrets.HF_SPACE_NAME }} || true
+          
+          # Force push to HF Spaces
+          git push space main:main --force
+      
+      - name: Deployment Summary
         run: |
-          echo "Deployment to HF Spaces: ${{ needs.deploy-hf.result }}"
-          if [ "${{ needs.deploy-hf.result }}" == "success" ]; then
-            echo "✅ App deployed to https://huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ env.HF_SPACE }}"
-          fi
+          echo "## 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Synced to Hugging Face Spaces" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Space URL:** https://huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ secrets.HF_SPACE_NAME }}" >> $GITHUB_STEP_SUMMARY
