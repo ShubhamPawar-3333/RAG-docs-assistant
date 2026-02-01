@@ -17,4 +17,7 @@ streamlit run src/frontend/app.py \
     --server.port 7860 \
     --server.address 0.0.0.0 \
     --server.headless true \
-    --browser.gatherUsageStats false
+    --browser.gatherUsageStats false \
+    --browser.serverAddress aienthussp-documind-ai.hf.space \
+    --browser.serverPort 443 \
+    --server.enableXsrfProtection true
