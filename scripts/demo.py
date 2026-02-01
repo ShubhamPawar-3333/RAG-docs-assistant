@@ -5,13 +5,6 @@ A simple script to demonstrate the RAG pipeline in action.
 Run this after setting up your GOOGLE_API_KEY in .env
 """
 
-import sys
-from pathlib import Path
-
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
 from src.rag import (
     load_documents,
     chunk_documents,
@@ -19,6 +12,14 @@ from src.rag import (
     create_vector_store,
     create_rag_pipeline,
 )
+
+import sys
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 
 
 def main():
@@ -70,7 +71,7 @@ def main():
             print(f"\n💬 Answer:\n{result['answer']}")
             
             if result.get('sources'):
-                print(f"\n📚 Sources:")
+                print("\n📚 Sources:")
                 for i, source in enumerate(result['sources'][:3], 1):
                     fname = source['metadata'].get('file_name', 'unknown')
                     score = source.get('score', 0)

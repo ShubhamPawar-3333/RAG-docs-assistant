@@ -13,7 +13,6 @@ from pathlib import Path
 from typing import List, Optional, Union
 
 from langchain_community.document_loaders import (
-    DirectoryLoader,
     PyPDFLoader,
     TextLoader,
     UnstructuredMarkdownLoader,

@@ -11,6 +11,14 @@ This script demonstrates and tests the complete RAG pipeline:
 Run this script to verify the entire pipeline works correctly.
 """
 
+from src.rag.loaders import MultiFormatDocumentLoader
+from src.rag.chunking import DocumentChunker
+from src.rag.embeddings import get_embeddings, EmbeddingsManager
+from src.rag.vectorstore import create_vector_store
+from src.rag.retrieval import Retriever
+from src.rag.llm import LLMManager
+from src.rag.pipeline import create_rag_pipeline
+
 import sys
 import logging
 from pathlib import Path
@@ -19,13 +27,6 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.rag.loaders import load_documents, MultiFormatDocumentLoader
-from src.rag.chunking import chunk_documents, DocumentChunker
-from src.rag.embeddings import get_embeddings, EmbeddingsManager
-from src.rag.vectorstore import create_vector_store, VectorStore
-from src.rag.retrieval import create_retriever, Retriever
-from src.rag.llm import LLMManager, get_llm
-from src.rag.pipeline import create_rag_pipeline, RAGPipeline
 
 # Configure logging
 logging.basicConfig(
@@ -215,7 +216,7 @@ def test_rag_pipeline(llm_available=True):
         # Create pipeline
         pipeline = create_rag_pipeline(collection_name="test_collection")
         
-        print(f"✅ RAG Pipeline created")
+        print("✅ RAG Pipeline created")
         info = pipeline.get_pipeline_info()
         print(f"   - LLM: {info['llm_model']}")
         print(f"   - Top K: {info['top_k']}")
@@ -226,7 +227,7 @@ def test_rag_pipeline(llm_available=True):
         
         result = pipeline.query(question, include_sources=True)
         
-        print(f"\n💬 Answer:")
+        print("\n💬 Answer:")
         print(f"   {result['answer'][:300]}...")
         
         if result.get("sources"):
@@ -268,7 +269,7 @@ def main():
         chunks = test_chunking(documents)
         embeddings = test_embeddings()
         store = test_vector_store(chunks, embeddings)
-        retriever = test_retrieval(store)
+        test_retrieval(store)
         llm = test_llm()
         
         if llm:

@@ -10,7 +10,7 @@ Supports multiple chunking strategies:
 
 import logging
 from enum import Enum
-from typing import List, Optional
+from typing import List
 
 from langchain_core.documents import Document
 from langchain_text_splitters import (

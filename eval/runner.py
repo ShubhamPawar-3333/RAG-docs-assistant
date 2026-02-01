@@ -8,7 +8,7 @@ import subprocess
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -179,8 +179,8 @@ class PromptfooRunner:
             "",
             "## Summary",
             "",
-            f"| Metric | Value |",
-            f"|--------|-------|",
+            "| Metric | Value |",
+            "|--------|-------|",
             f"| Total Tests | {summary['total_tests']} |",
             f"| Passed | {summary['passed']} |",
             f"| Failed | {summary['failed']} |",

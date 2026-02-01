@@ -5,7 +5,6 @@ Loads environment variables and provides typed configuration
 for the RAG Documentation Assistant.
 """
 
-import os
 from pathlib import Path
 from typing import Optional
 

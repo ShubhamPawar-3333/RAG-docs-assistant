@@ -4,10 +4,6 @@ Unit Tests for Embeddings
 Tests for embedding model functionality.
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
-
-
 class TestEmbeddings:
     """Tests for embedding functionality."""
     

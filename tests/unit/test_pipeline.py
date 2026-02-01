@@ -4,8 +4,7 @@ Unit Tests for RAG Pipeline
 Tests for the core RAG pipeline functionality.
 """
 
-import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import patch
 
 
 class TestRAGPipeline:

@@ -6,7 +6,7 @@ using a more powerful cross-encoder model.
 """
 
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional
 from dataclasses import dataclass
 from langchain_core.documents import Document
 

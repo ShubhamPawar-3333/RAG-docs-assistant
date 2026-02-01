@@ -19,7 +19,6 @@ from typing import (
     List,
     Optional,
     TypeVar,
-    Union,
 )
 
 logger = logging.getLogger(__name__)

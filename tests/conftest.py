@@ -5,7 +5,6 @@ Shared fixtures and configuration for all tests.
 """
 
 import pytest
-import os
 import tempfile
 from pathlib import Path
 
