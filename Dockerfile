@@ -25,6 +25,8 @@ RUN mkdir -p data/chroma data/documents eval/results
 # Environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV APP_ENV=production
+ENV DEBUG=false
 
 # Expose port for HF Spaces
 EXPOSE 7860
