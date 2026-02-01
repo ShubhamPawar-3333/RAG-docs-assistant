@@ -18,6 +18,6 @@ streamlit run src/frontend/app.py \
     --server.address 0.0.0.0 \
     --server.headless true \
     --browser.gatherUsageStats false \
-    --browser.serverAddress alenthussp-documind-ai.hf.space \
+    --browser.serverAddress AIenthusSP-Documind-AI.hf.space \
     --browser.serverPort 443 \
     --server.enableXsrfProtection true
