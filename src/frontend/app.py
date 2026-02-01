@@ -19,7 +19,25 @@ st.set_page_config(
 )
 
 # API configuration - use localhost for HF Spaces (both run in same container)
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+# API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+# ---------------- API CONFIGURATION ----------------
+def resolve_api_base_url():
+    # 1) Explicit override (Docker / CI / custom deploys)
+    if os.getenv("API_BASE_URL"):
+        return os.getenv("API_BASE_URL")
+
+    # 2) Hugging Face Spaces auto-detection
+    space_host = os.getenv("SPACE_HOST")
+    if space_host:
+        return f"https://{space_host}"
+
+    # 3) Local development fallback
+    return "http://localhost:8000"
+
+
+API_BASE_URL = resolve_api_base_url()
+
+st.sidebar.write("Resolved API URL:", API_BASE_URL)
 
 
 # ============== Custom CSS ==============
