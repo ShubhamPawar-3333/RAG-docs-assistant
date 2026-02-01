@@ -59,6 +59,7 @@ async def ingest_files(
     - **chunk_overlap**: Overlap between chunks
     """
     try:
+        logger.info("INGEST ENDPOINT HIT")
         logger.info(f"Ingesting {len(files)} file(s) to collection '{collection_name}'")
         
         all_documents = []
