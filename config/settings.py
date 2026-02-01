@@ -56,7 +56,7 @@ class Settings(BaseSettings):
             "http://localhost:3000",
             "http://localhost:8501",
             "http://localhost:7860",
-            "https://alenthussp-documind-ai.hf.space",
+            "https://aienthussp-documind-ai.hf.space",
             "https://huggingface.co",
         ],
         alias="CORS_ORIGINS"
