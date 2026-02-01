@@ -23,7 +23,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Addition
-TMP_DIR = Path("/data")
+TMP_DIR = Path(
+    os.getenv("DOCUMIND_TMP_DIR", tempfile.gettempdir())
+)
 TMP_DIR.mkdir(parents=True, exist_ok=True)
 
 # Supported file types

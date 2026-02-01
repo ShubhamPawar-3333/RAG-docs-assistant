@@ -2,35 +2,35 @@ Run pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
   pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
   shell: /usr/bin/bash -e {0}
   env:
-    PYTHON_VERSION: 3.11
+    PYTHON_VERSION: 3.13
     NODE_VERSION: 20
-    pythonLocation: /opt/hostedtoolcache/Python/3.11.14/x64
-    PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.14/x64/lib/pkgconfig
-    Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
-    Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
-    Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
-    LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.14/x64/lib
+    pythonLocation: /opt/hostedtoolcache/Python/3.13.11/x64
+    PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.11/x64/lib/pkgconfig
+    Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.11/x64
+    Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.11/x64
+    Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.11/x64
+    LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.11/x64/lib
     GOOGLE_API_KEY: 
 ============================= test session starts ==============================
-platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.11.14/x64/bin/python
+platform linux -- Python 3.13.11, pytest-9.0.2, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.13.11/x64/bin/python
 cachedir: .pytest_cache
 rootdir: /home/runner/work/RAG-docs-assistant/RAG-docs-assistant
 plugins: langsmith-0.6.7, cov-7.0.0, Faker-37.12.0, asyncio-1.3.0, anyio-4.12.1
 asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
 collecting ... collected 74 items
 
-tests/integration/test_api.py::TestHealthEndpoints::test_health_check PASSED [  1%]
-tests/integration/test_api.py::TestHealthEndpoints::test_health_detailed PASSED [  2%]
-tests/integration/test_api.py::TestHealthEndpoints::test_readiness_check FAILED [  4%]
-tests/integration/test_api.py::TestHealthEndpoints::test_liveness_check FAILED [  5%]
-tests/integration/test_api.py::TestQueryEndpoints::test_query_endpoint FAILED [  6%]
-tests/integration/test_api.py::TestQueryEndpoints::test_query_validation_error PASSED [  8%]
-tests/integration/test_api.py::TestQueryEndpoints::test_query_empty_question PASSED [  9%]
-tests/integration/test_api.py::TestIngestEndpoints::test_ingest_text FAILED [ 10%]
-tests/integration/test_api.py::TestIngestEndpoints::test_ingest_files_no_files PASSED [ 12%]
-tests/integration/test_api.py::TestErrorHandling::test_404_endpoint PASSED [ 13%]
-tests/integration/test_api.py::TestErrorHandling::test_method_not_allowed PASSED [ 14%]
-tests/integration/test_api.py::TestErrorHandling::test_internal_error_handling FAILED [ 16%]
+tests/integration/test_api.py::TestHealthEndpoints::test_health_check ERROR [  1%]
+tests/integration/test_api.py::TestHealthEndpoints::test_health_detailed ERROR [  2%]
+tests/integration/test_api.py::TestHealthEndpoints::test_readiness_check ERROR [  4%]
+tests/integration/test_api.py::TestHealthEndpoints::test_liveness_check ERROR [  5%]
+tests/integration/test_api.py::TestQueryEndpoints::test_query_endpoint ERROR [  6%]
+tests/integration/test_api.py::TestQueryEndpoints::test_query_validation_error ERROR [  8%]
+tests/integration/test_api.py::TestQueryEndpoints::test_query_empty_question ERROR [  9%]
+tests/integration/test_api.py::TestIngestEndpoints::test_ingest_text ERROR [ 10%]
+tests/integration/test_api.py::TestIngestEndpoints::test_ingest_files_no_files ERROR [ 12%]
+tests/integration/test_api.py::TestErrorHandling::test_404_endpoint ERROR [ 13%]
+tests/integration/test_api.py::TestErrorHandling::test_method_not_allowed ERROR [ 14%]
+tests/integration/test_api.py::TestErrorHandling::test_internal_error_handling ERROR [ 16%]
 tests/unit/test_async_utils.py::TestBatchResult::test_batch_result_creation PASSED [ 17%]
 tests/unit/test_async_utils.py::TestBatchResult::test_batch_result_with_errors PASSED [ 18%]
 tests/unit/test_async_utils.py::TestBatchResult::test_get_successful PASSED [ 20%]
@@ -94,194 +94,343 @@ tests/unit/test_pipeline.py::TestRAGPipeline::test_create_rag_pipeline_convenien
 tests/unit/test_pipeline.py::TestRetriever::test_retrieval_result_structure PASSED [ 98%]
 tests/unit/test_pipeline.py::TestRetriever::test_empty_retrieval_result PASSED [100%]
 
-=================================== FAILURES ===================================
-___________________ TestHealthEndpoints.test_readiness_check ___________________
+==================================== ERRORS ====================================
+___________ ERROR at setup of TestHealthEndpoints.test_health_check ____________
 
-self = <tests.integration.test_api.TestHealthEndpoints object at 0x7fa9a669a850>
-client = <starlette.testclient.TestClient object at 0x7fa9a678f690>
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
 
-    def test_readiness_check(self, client):
-        """Test readiness check endpoint."""
-        response = client.get("/health/ready")
-    
->       assert response.status_code in [200, 503]
-E       assert 404 in [200, 503]
-E        +  where 404 = <Response [404 Not Found]>.status_code
-
-tests/integration/test_api.py:43: AssertionError
-___________________ TestHealthEndpoints.test_liveness_check ____________________
-
-self = <tests.integration.test_api.TestHealthEndpoints object at 0x7fa9a669b310>
-client = <starlette.testclient.TestClient object at 0x7fa843105590>
-
-    def test_liveness_check(self, client):
-        """Test liveness check endpoint."""
-        response = client.get("/health/live")
-    
->       assert response.status_code == 200
-E       assert 404 == 200
-E        +  where 404 = <Response [404 Not Found]>.status_code
-
-tests/integration/test_api.py:49: AssertionError
-____________________ TestQueryEndpoints.test_query_endpoint ____________________
-
-args = (<tests.integration.test_api.TestQueryEndpoints object at 0x7fa9a669b850>,)
-keywargs = {'client': <starlette.testclient.TestClient object at 0x7fa8432e3890>}
-
-    @wraps(func)
-    def patched(*args, **keywargs):
->       with self.decoration_helper(patched,
-                                    args,
-                                    keywargs) as (newargs, newkeywargs):
-
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1375: 
+tests/integration/test_api.py:15: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:137: in __enter__
-    return next(self.gen)
-           ^^^^^^^^^^^^^^
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1357: in decoration_helper
-    arg = exit_stack.enter_context(patching)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:517: in enter_context
-    result = _enter(cm)
-             ^^^^^^^^^^
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-                      ^^^^^^^^^^^^^^^^^^^
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <unittest.mock._patch object at 0x7fa9a65cf110>
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
 
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
         try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'src.api.routes.query' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/query.py'> does not have the attribute 'RAGPipeline'
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
 
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1419: AttributeError
-_____________________ TestIngestEndpoints.test_ingest_text _____________________
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+__________ ERROR at setup of TestHealthEndpoints.test_health_detailed __________
 
-args = (<tests.integration.test_api.TestIngestEndpoints object at 0x7fa9a678df90>,)
-keywargs = {'client': <starlette.testclient.TestClient object at 0x7fa843083c90>}
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
 
-    @wraps(func)
-    def patched(*args, **keywargs):
->       with self.decoration_helper(patched,
-                                    args,
-                                    keywargs) as (newargs, newkeywargs):
-
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1375: 
+tests/integration/test_api.py:15: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:137: in __enter__
-    return next(self.gen)
-           ^^^^^^^^^^^^^^
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1357: in decoration_helper
-    arg = exit_stack.enter_context(patching)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:517: in enter_context
-    result = _enter(cm)
-             ^^^^^^^^^^
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-                      ^^^^^^^^^^^^^^^^^^^
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <unittest.mock._patch object at 0x7fa9a6788250>
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
 
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
         try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'src.api.routes.ingest' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/ingest.py'> does not have the attribute 'DocumentIngester'
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
 
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1419: AttributeError
-________________ TestErrorHandling.test_internal_error_handling ________________
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+__________ ERROR at setup of TestHealthEndpoints.test_readiness_check __________
 
-args = (<tests.integration.test_api.TestErrorHandling object at 0x7fa9a5fd7d90>,)
-keywargs = {'client': <starlette.testclient.TestClient object at 0x7fa843066150>}
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
 
-    @wraps(func)
-    def patched(*args, **keywargs):
->       with self.decoration_helper(patched,
-                                    args,
-                                    keywargs) as (newargs, newkeywargs):
-
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1375: 
+tests/integration/test_api.py:15: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:137: in __enter__
-    return next(self.gen)
-           ^^^^^^^^^^^^^^
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1357: in decoration_helper
-    arg = exit_stack.enter_context(patching)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:517: in enter_context
-    result = _enter(cm)
-             ^^^^^^^^^^
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1446: in __enter__
-    original, local = self.get_original()
-                      ^^^^^^^^^^^^^^^^^^^
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = <unittest.mock._patch object at 0x7fa9a67883d0>
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
 
-    def get_original(self):
-        target = self.getter()
-        name = self.attribute
-    
-        original = DEFAULT
-        local = False
-    
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
         try:
-            original = target.__dict__[name]
-        except (AttributeError, KeyError):
-            original = getattr(target, name, DEFAULT)
-        else:
-            local = True
-    
-        if name in _builtins and isinstance(target, ModuleType):
-            self.create = True
-    
-        if not self.create and original is DEFAULT:
->           raise AttributeError(
-                "%s does not have the attribute %r" % (target, name)
-            )
-E           AttributeError: <module 'src.api.routes.query' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/query.py'> does not have the attribute 'RAGPipeline'
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
 
-/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1419: AttributeError
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+__________ ERROR at setup of TestHealthEndpoints.test_liveness_check ___________
+
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
+
+tests/integration/test_api.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
+
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+___________ ERROR at setup of TestQueryEndpoints.test_query_endpoint ___________
+
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
+
+tests/integration/test_api.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
+
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+_______ ERROR at setup of TestQueryEndpoints.test_query_validation_error _______
+
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
+
+tests/integration/test_api.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
+
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+________ ERROR at setup of TestQueryEndpoints.test_query_empty_question ________
+
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
+
+tests/integration/test_api.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
+
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+____________ ERROR at setup of TestIngestEndpoints.test_ingest_text ____________
+
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
+
+tests/integration/test_api.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
+
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+_______ ERROR at setup of TestIngestEndpoints.test_ingest_files_no_files _______
+
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
+
+tests/integration/test_api.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
+
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+____________ ERROR at setup of TestErrorHandling.test_404_endpoint _____________
+
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
+
+tests/integration/test_api.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
+
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+_________ ERROR at setup of TestErrorHandling.test_method_not_allowed __________
+
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
+
+tests/integration/test_api.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
+
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
+_______ ERROR at setup of TestErrorHandling.test_internal_error_handling _______
+
+    @pytest.fixture
+    def client():
+        """Create a test client for the API."""
+>       from src.api.main import app
+
+tests/integration/test_api.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/api/main.py:13: in <module>
+    from src.api.routes import query, ingest, health
+src/api/routes/__init__.py:2: in <module>
+    from src.api.routes import health, query, ingest
+src/api/routes/ingest.py:27: in <module>
+    TMP_DIR.mkdir(parents=True, exist_ok=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/data'), mode = 511, parents = True, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           PermissionError: [Errno 13] Permission denied: '/data'
+
+/opt/hostedtoolcache/Python/3.13.11/x64/lib/python3.13/pathlib/_local.py:722: PermissionError
 =============================== warnings summary ===============================
 config/settings.py:15
   /home/runner/work/RAG-docs-assistant/RAG-docs-assistant/config/settings.py:15: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
@@ -289,22 +438,22 @@ config/settings.py:15
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ================================ tests coverage ================================
-_______________ coverage: platform linux, python 3.11.14-final-0 _______________
+_______________ coverage: platform linux, python 3.13.11-final-0 _______________
 
 Name                             Stmts   Miss  Cover   Missing
 --------------------------------------------------------------
 src/__init__.py                      0      0   100%
 src/api/__init__.py                  0      0   100%
-src/api/main.py                     29      7    76%   36-42, 78, 87-88
-src/api/middleware/__init__.py       2      0   100%
-src/api/middleware/errors.py        44      5    89%   31-40, 117-118
+src/api/main.py                     29     24    17%   14-88
+src/api/middleware/__init__.py       2      2     0%   2-8
+src/api/middleware/errors.py        44     44     0%   7-130
 src/api/models.py                   46      0   100%
-src/api/routes/__init__.py           2      0   100%
-src/api/routes/health.py            52     15    71%   56-63, 77-84, 92, 104-111, 127, 137
-src/api/routes/ingest.py            74     54    27%   54-130, 153-184, 197-214
+src/api/routes/__init__.py           2      1    50%   4
+src/api/routes/health.py            52     38    27%   25, 42-113, 127, 137
+src/api/routes/ingest.py            76     61    20%   30-219
 src/api/routes/query.py             43     30    30%   25-31, 53-86, 100-129
 src/frontend/__init__.py             0      0   100%
-src/frontend/app.py                126    126     0%   8-346
+src/frontend/app.py                134    134     0%   8-364
 src/llmops/__init__.py               2      2     0%   2-11
 src/llmops/langfuse_tracer.py      117    117     0%   8-319
 src/rag/__init__.py                 11      0   100%
@@ -312,22 +461,27 @@ src/rag/async_utils.py             172     52    70%   120-121, 219-223, 240-303
 src/rag/caching.py                 194     63    68%   51, 56, 61, 66, 71, 129, 179-181, 192-217, 221, 225-243, 247-254, 258-262, 266-272, 276-288, 482, 516
 src/rag/chunking.py                 54     15    72%   90-115, 160-165, 183-194, 223-231
 src/rag/embeddings.py               50     11    78%   80-81, 118, 137-138, 150-151, 160-169, 216
-src/rag/llm.py                      65     29    55%   110-112, 116-118, 141-153, 172-186, 199, 234-240, 261-264, 274-280
+src/rag/llm.py                      65     42    35%   83-98, 110-112, 116-118, 141-153, 172-186, 195-207, 234-240, 261-264, 274-280
 src/rag/loaders.py                  82     41    50%   83, 88, 113-115, 137-174, 189-199, 227-230
 src/rag/pipeline.py                101     31    69%   89-95, 100-105, 115-117, 122-144, 220-235, 278-279, 298-299
 src/rag/reranking.py                92     68    26%   46-49, 54-65, 84-117, 136-138, 143-147, 166-197, 219-227, 238-255, 272-281
 src/rag/retrieval.py                80     50    38%   64-75, 114-120, 145-193, 215-216, 228-233, 255-257, 261-267, 284-285, 311-315
-src/rag/vectorstore.py              78     44    44%   63, 101-120, 139-153, 172-188, 192-201, 220-222, 236, 251
+src/rag/vectorstore.py              78     56    28%   58-73, 80, 101-120, 139-153, 172-188, 192-201, 210-222, 236, 251, 271
 --------------------------------------------------------------
-TOTAL                             1516    760    50%
+TOTAL                             1526    882    42%
 Coverage XML written to file coverage.xml
 =========================== short test summary info ============================
-FAILED tests/integration/test_api.py::TestHealthEndpoints::test_readiness_check - assert 404 in [200, 503]
- +  where 404 = <Response [404 Not Found]>.status_code
-FAILED tests/integration/test_api.py::TestHealthEndpoints::test_liveness_check - assert 404 == 200
- +  where 404 = <Response [404 Not Found]>.status_code
-FAILED tests/integration/test_api.py::TestQueryEndpoints::test_query_endpoint - AttributeError: <module 'src.api.routes.query' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/query.py'> does not have the attribute 'RAGPipeline'
-FAILED tests/integration/test_api.py::TestIngestEndpoints::test_ingest_text - AttributeError: <module 'src.api.routes.ingest' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/ingest.py'> does not have the attribute 'DocumentIngester'
-FAILED tests/integration/test_api.py::TestErrorHandling::test_internal_error_handling - AttributeError: <module 'src.api.routes.query' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/query.py'> does not have the attribute 'RAGPipeline'
-=================== 5 failed, 69 passed, 1 warning in 23.42s ===================
+ERROR tests/integration/test_api.py::TestHealthEndpoints::test_health_check - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestHealthEndpoints::test_health_detailed - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestHealthEndpoints::test_readiness_check - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestHealthEndpoints::test_liveness_check - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestQueryEndpoints::test_query_endpoint - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestQueryEndpoints::test_query_validation_error - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestQueryEndpoints::test_query_empty_question - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestIngestEndpoints::test_ingest_text - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestIngestEndpoints::test_ingest_files_no_files - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestErrorHandling::test_404_endpoint - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestErrorHandling::test_method_not_allowed - PermissionError: [Errno 13] Permission denied: '/data'
+ERROR tests/integration/test_api.py::TestErrorHandling::test_internal_error_handling - PermissionError: [Errno 13] Permission denied: '/data'
+================== 62 passed, 1 warning, 12 errors in 21.43s ===================
 Error: Process completed with exit code 1.
