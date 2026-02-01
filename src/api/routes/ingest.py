@@ -22,6 +22,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Addition
+TMP_DIR = Path("/data")
+TMP_DIR.mkdir(parents=True, exist_ok=True)
+
 # Supported file types
 SUPPORTED_EXTENSIONS = {".txt", ".md", ".markdown", ".pdf"}
 
@@ -70,7 +74,8 @@ async def ingest_files(
                 )
             
             # Save to temp file and load
-            with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+            # with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=ext, dir=TMP_DIR) as tmp:
                 content = await file.read()
                 tmp.write(content)
                 tmp_path = tmp.name
