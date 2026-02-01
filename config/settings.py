@@ -52,13 +52,7 @@ class Settings(BaseSettings):
     api_host: str = Field(default="0.0.0.0", alias="API_HOST")
     api_port: int = Field(default=8000, alias="API_PORT")
     cors_origins: list = Field(
-        default=[
-            "http://localhost:3000",
-            "http://localhost:8501",
-            "http://localhost:7860",
-            "https://aienthussp-documind-ai.hf.space",
-            "https://huggingface.co",
-        ],
+        default=["*"],  # Allow all origins (HF Spaces uses dynamic subdomains)
         alias="CORS_ORIGINS"
     )
 
