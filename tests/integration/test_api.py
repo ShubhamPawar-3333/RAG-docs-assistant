@@ -38,13 +38,13 @@ class TestHealthEndpoints:
     
     def test_readiness_check(self, client):
         """Test readiness check endpoint."""
-        response = client.get("/health/ready")
+        response = client.get("/ready")
         
         assert response.status_code in [200, 503]
     
     def test_liveness_check(self, client):
         """Test liveness check endpoint."""
-        response = client.get("/health/live")
+        response = client.get("/live")
         
         assert response.status_code == 200
 
@@ -52,17 +52,17 @@ class TestHealthEndpoints:
 class TestQueryEndpoints:
     """Tests for query endpoints."""
     
-    @patch("src.api.routes.query.RAGPipeline")
-    def test_query_endpoint(self, mock_pipeline_class, client):
+    @patch("src.api.routes.query.get_pipeline")
+    def test_query_endpoint(self, mock_get_pipeline, client):
         """Test the /api/query endpoint."""
-        # Setup mock
+        # Setup mock pipeline
         mock_pipeline = MagicMock()
         mock_pipeline.query.return_value = {
             "answer": "This is a test answer.",
             "question": "Test question?",
             "sources": [],
         }
-        mock_pipeline_class.return_value = mock_pipeline
+        mock_get_pipeline.return_value = mock_pipeline
         
         response = client.post(
             "/api/query",
@@ -100,15 +100,21 @@ class TestQueryEndpoints:
 class TestIngestEndpoints:
     """Tests for ingestion endpoints."""
     
-    @patch("src.api.routes.ingest.DocumentIngester")
-    def test_ingest_text(self, mock_ingester_class, client):
+    @patch("src.api.routes.ingest.create_vector_store")
+    @patch("src.api.routes.ingest.get_embeddings")
+    @patch("src.api.routes.ingest.DocumentChunker")
+    def test_ingest_text(self, mock_chunker_class, mock_get_embeddings, mock_create_store, client):
         """Test the /api/ingest/text endpoint."""
-        mock_ingester = MagicMock()
-        mock_ingester.ingest_text.return_value = {
-            "success": True,
-            "chunks_created": 3,
-        }
-        mock_ingester_class.return_value = mock_ingester
+        # Setup mocks
+        mock_chunker = MagicMock()
+        mock_chunker.chunk_documents.return_value = [MagicMock()]
+        mock_chunker_class.return_value = mock_chunker
+        
+        mock_embeddings = MagicMock()
+        mock_get_embeddings.return_value = mock_embeddings
+        
+        mock_store = MagicMock()
+        mock_create_store.return_value = mock_store
         
         response = client.post(
             "/api/ingest/text",
@@ -145,12 +151,12 @@ class TestErrorHandling:
         
         assert response.status_code == 405
     
-    @patch("src.api.routes.query.RAGPipeline")
-    def test_internal_error_handling(self, mock_pipeline_class, client):
+    @patch("src.api.routes.query.get_pipeline")
+    def test_internal_error_handling(self, mock_get_pipeline, client):
         """Test that internal errors are handled gracefully."""
         mock_pipeline = MagicMock()
         mock_pipeline.query.side_effect = Exception("Internal error")
-        mock_pipeline_class.return_value = mock_pipeline
+        mock_get_pipeline.return_value = mock_pipeline
         
         response = client.post(
             "/api/query",

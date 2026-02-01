@@ -1,1 +1,333 @@
-Testing
+Run pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
+  pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
+  shell: /usr/bin/bash -e {0}
+  env:
+    PYTHON_VERSION: 3.11
+    NODE_VERSION: 20
+    pythonLocation: /opt/hostedtoolcache/Python/3.11.14/x64
+    PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.14/x64/lib/pkgconfig
+    Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
+    Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
+    Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
+    LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.14/x64/lib
+    GOOGLE_API_KEY: 
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.11.14/x64/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/work/RAG-docs-assistant/RAG-docs-assistant
+plugins: langsmith-0.6.7, cov-7.0.0, Faker-37.12.0, asyncio-1.3.0, anyio-4.12.1
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 74 items
+
+tests/integration/test_api.py::TestHealthEndpoints::test_health_check PASSED [  1%]
+tests/integration/test_api.py::TestHealthEndpoints::test_health_detailed PASSED [  2%]
+tests/integration/test_api.py::TestHealthEndpoints::test_readiness_check FAILED [  4%]
+tests/integration/test_api.py::TestHealthEndpoints::test_liveness_check FAILED [  5%]
+tests/integration/test_api.py::TestQueryEndpoints::test_query_endpoint FAILED [  6%]
+tests/integration/test_api.py::TestQueryEndpoints::test_query_validation_error PASSED [  8%]
+tests/integration/test_api.py::TestQueryEndpoints::test_query_empty_question PASSED [  9%]
+tests/integration/test_api.py::TestIngestEndpoints::test_ingest_text FAILED [ 10%]
+tests/integration/test_api.py::TestIngestEndpoints::test_ingest_files_no_files PASSED [ 12%]
+tests/integration/test_api.py::TestErrorHandling::test_404_endpoint PASSED [ 13%]
+tests/integration/test_api.py::TestErrorHandling::test_method_not_allowed PASSED [ 14%]
+tests/integration/test_api.py::TestErrorHandling::test_internal_error_handling FAILED [ 16%]
+tests/unit/test_async_utils.py::TestBatchResult::test_batch_result_creation PASSED [ 17%]
+tests/unit/test_async_utils.py::TestBatchResult::test_batch_result_with_errors PASSED [ 18%]
+tests/unit/test_async_utils.py::TestBatchResult::test_get_successful PASSED [ 20%]
+tests/unit/test_async_utils.py::TestAsyncBatchProcessor::test_process_empty_items PASSED [ 21%]
+tests/unit/test_async_utils.py::TestAsyncBatchProcessor::test_process_sync_function PASSED [ 22%]
+tests/unit/test_async_utils.py::TestAsyncBatchProcessor::test_process_async_function PASSED [ 24%]
+tests/unit/test_async_utils.py::TestAsyncBatchProcessor::test_process_with_errors PASSED [ 25%]
+tests/unit/test_async_utils.py::TestAsyncBatchProcessor::test_progress_callback PASSED [ 27%]
+tests/unit/test_async_utils.py::TestAsyncBatchProcessor::test_process_sync_wrapper PASSED [ 28%]
+tests/unit/test_async_utils.py::TestRateLimiter::test_rate_limiter_allows_burst PASSED [ 29%]
+tests/unit/test_async_utils.py::TestRateLimiter::test_rate_limiter_context_manager PASSED [ 31%]
+tests/unit/test_async_utils.py::TestAsyncRetry::test_retry_success_first_try PASSED [ 32%]
+tests/unit/test_async_utils.py::TestAsyncRetry::test_retry_success_after_failures PASSED [ 33%]
+tests/unit/test_async_utils.py::TestAsyncRetry::test_retry_exhausted PASSED [ 35%]
+tests/unit/test_async_utils.py::TestGatherWithConcurrency::test_gather_results_in_order PASSED [ 36%]
+tests/unit/test_async_utils.py::TestGatherWithConcurrency::test_gather_respects_concurrency PASSED [ 37%]
+tests/unit/test_caching.py::TestCacheEntry::test_cache_entry_creation PASSED [ 39%]
+tests/unit/test_caching.py::TestCacheEntry::test_cache_entry_not_expired PASSED [ 40%]
+tests/unit/test_caching.py::TestCacheEntry::test_cache_entry_expired PASSED [ 41%]
+tests/unit/test_caching.py::TestCacheEntry::test_cache_entry_serialization PASSED [ 43%]
+tests/unit/test_caching.py::TestInMemoryCache::test_set_and_get PASSED   [ 44%]
+tests/unit/test_caching.py::TestInMemoryCache::test_get_missing_key PASSED [ 45%]
+tests/unit/test_caching.py::TestInMemoryCache::test_get_expired_entry PASSED [ 47%]
+tests/unit/test_caching.py::TestInMemoryCache::test_delete PASSED        [ 48%]
+tests/unit/test_caching.py::TestInMemoryCache::test_clear PASSED         [ 50%]
+tests/unit/test_caching.py::TestInMemoryCache::test_max_size_eviction PASSED [ 51%]
+tests/unit/test_caching.py::TestInMemoryCache::test_hit_count_increment PASSED [ 52%]
+tests/unit/test_caching.py::TestInMemoryCache::test_stats PASSED         [ 54%]
+tests/unit/test_caching.py::TestQueryCache::test_get_and_set PASSED      [ 55%]
+tests/unit/test_caching.py::TestQueryCache::test_get_missing PASSED      [ 56%]
+tests/unit/test_caching.py::TestQueryCache::test_query_normalization PASSED [ 58%]
+tests/unit/test_caching.py::TestQueryCache::test_different_collections PASSED [ 59%]
+tests/unit/test_caching.py::TestQueryCache::test_get_or_compute_cache_hit PASSED [ 60%]
+tests/unit/test_caching.py::TestQueryCache::test_disabled_cache PASSED   [ 62%]
+tests/unit/test_caching.py::TestQueryCache::test_custom_ttl PASSED       [ 63%]
+tests/unit/test_caching.py::TestQueryCache::test_invalidate PASSED       [ 64%]
+tests/unit/test_caching.py::TestQueryCache::test_invalidate_collection PASSED [ 66%]
+tests/unit/test_caching.py::TestQueryCache::test_stats PASSED            [ 67%]
+tests/unit/test_caching.py::TestCreateCache::test_create_memory_cache PASSED [ 68%]
+tests/unit/test_caching.py::TestCreateCache::test_create_cache_defaults PASSED [ 70%]
+tests/unit/test_caching.py::TestCreateCache::test_create_cache_invalid_backend PASSED [ 71%]
+tests/unit/test_embeddings.py::TestEmbeddings::test_embeddings_initialization PASSED [ 72%]
+tests/unit/test_embeddings.py::TestEmbeddings::test_embed_single_text PASSED [ 74%]
+tests/unit/test_embeddings.py::TestEmbeddings::test_embed_multiple_texts PASSED [ 75%]
+tests/unit/test_embeddings.py::TestEmbeddings::test_similar_texts_have_similar_embeddings PASSED [ 77%]
+tests/unit/test_embeddings.py::TestEmbeddings::test_empty_text_embedding PASSED [ 78%]
+tests/unit/test_loaders.py::TestDocumentLoaders::test_multiformat_loader_loads_txt_file PASSED [ 79%]
+tests/unit/test_loaders.py::TestDocumentLoaders::test_multiformat_loader_loads_md_file PASSED [ 81%]
+tests/unit/test_loaders.py::TestDocumentLoaders::test_loader_handles_missing_file PASSED [ 82%]
+tests/unit/test_loaders.py::TestDocumentLoaders::test_loader_get_supported_extensions PASSED [ 83%]
+tests/unit/test_loaders.py::TestDocumentLoaders::test_load_documents_convenience_function PASSED [ 85%]
+tests/unit/test_loaders.py::TestChunking::test_chunker_splits_document PASSED [ 86%]
+tests/unit/test_loaders.py::TestChunking::test_chunker_preserves_metadata PASSED [ 87%]
+tests/unit/test_loaders.py::TestChunking::test_chunker_handles_empty_document PASSED [ 89%]
+tests/unit/test_pipeline.py::TestRAGPipeline::test_pipeline_initialization PASSED [ 90%]
+tests/unit/test_pipeline.py::TestRAGPipeline::test_pipeline_builder_pattern PASSED [ 91%]
+tests/unit/test_pipeline.py::TestRAGPipeline::test_format_docs PASSED    [ 93%]
+tests/unit/test_pipeline.py::TestRAGPipeline::test_get_pipeline_info PASSED [ 94%]
+tests/unit/test_pipeline.py::TestRAGPipeline::test_query_with_mocked_components PASSED [ 95%]
+tests/unit/test_pipeline.py::TestRAGPipeline::test_create_rag_pipeline_convenience PASSED [ 97%]
+tests/unit/test_pipeline.py::TestRetriever::test_retrieval_result_structure PASSED [ 98%]
+tests/unit/test_pipeline.py::TestRetriever::test_empty_retrieval_result PASSED [100%]
+
+=================================== FAILURES ===================================
+___________________ TestHealthEndpoints.test_readiness_check ___________________
+
+self = <tests.integration.test_api.TestHealthEndpoints object at 0x7fa9a669a850>
+client = <starlette.testclient.TestClient object at 0x7fa9a678f690>
+
+    def test_readiness_check(self, client):
+        """Test readiness check endpoint."""
+        response = client.get("/health/ready")
+    
+>       assert response.status_code in [200, 503]
+E       assert 404 in [200, 503]
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/integration/test_api.py:43: AssertionError
+___________________ TestHealthEndpoints.test_liveness_check ____________________
+
+self = <tests.integration.test_api.TestHealthEndpoints object at 0x7fa9a669b310>
+client = <starlette.testclient.TestClient object at 0x7fa843105590>
+
+    def test_liveness_check(self, client):
+        """Test liveness check endpoint."""
+        response = client.get("/health/live")
+    
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/integration/test_api.py:49: AssertionError
+____________________ TestQueryEndpoints.test_query_endpoint ____________________
+
+args = (<tests.integration.test_api.TestQueryEndpoints object at 0x7fa9a669b850>,)
+keywargs = {'client': <starlette.testclient.TestClient object at 0x7fa8432e3890>}
+
+    @wraps(func)
+    def patched(*args, **keywargs):
+>       with self.decoration_helper(patched,
+                                    args,
+                                    keywargs) as (newargs, newkeywargs):
+
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1375: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1357: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:517: in enter_context
+    result = _enter(cm)
+             ^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1446: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7fa9a65cf110>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'src.api.routes.query' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/query.py'> does not have the attribute 'RAGPipeline'
+
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1419: AttributeError
+_____________________ TestIngestEndpoints.test_ingest_text _____________________
+
+args = (<tests.integration.test_api.TestIngestEndpoints object at 0x7fa9a678df90>,)
+keywargs = {'client': <starlette.testclient.TestClient object at 0x7fa843083c90>}
+
+    @wraps(func)
+    def patched(*args, **keywargs):
+>       with self.decoration_helper(patched,
+                                    args,
+                                    keywargs) as (newargs, newkeywargs):
+
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1375: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1357: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:517: in enter_context
+    result = _enter(cm)
+             ^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1446: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7fa9a6788250>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'src.api.routes.ingest' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/ingest.py'> does not have the attribute 'DocumentIngester'
+
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1419: AttributeError
+________________ TestErrorHandling.test_internal_error_handling ________________
+
+args = (<tests.integration.test_api.TestErrorHandling object at 0x7fa9a5fd7d90>,)
+keywargs = {'client': <starlette.testclient.TestClient object at 0x7fa843066150>}
+
+    @wraps(func)
+    def patched(*args, **keywargs):
+>       with self.decoration_helper(patched,
+                                    args,
+                                    keywargs) as (newargs, newkeywargs):
+
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1375: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1357: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/contextlib.py:517: in enter_context
+    result = _enter(cm)
+             ^^^^^^^^^^
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1446: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7fa9a67883d0>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'src.api.routes.query' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/query.py'> does not have the attribute 'RAGPipeline'
+
+/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/unittest/mock.py:1419: AttributeError
+=============================== warnings summary ===============================
+config/settings.py:15
+  /home/runner/work/RAG-docs-assistant/RAG-docs-assistant/config/settings.py:15: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Settings(BaseSettings):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.11.14-final-0 _______________
+
+Name                             Stmts   Miss  Cover   Missing
+--------------------------------------------------------------
+src/__init__.py                      0      0   100%
+src/api/__init__.py                  0      0   100%
+src/api/main.py                     29      7    76%   36-42, 78, 87-88
+src/api/middleware/__init__.py       2      0   100%
+src/api/middleware/errors.py        44      5    89%   31-40, 117-118
+src/api/models.py                   46      0   100%
+src/api/routes/__init__.py           2      0   100%
+src/api/routes/health.py            52     15    71%   56-63, 77-84, 92, 104-111, 127, 137
+src/api/routes/ingest.py            74     54    27%   54-130, 153-184, 197-214
+src/api/routes/query.py             43     30    30%   25-31, 53-86, 100-129
+src/frontend/__init__.py             0      0   100%
+src/frontend/app.py                126    126     0%   8-346
+src/llmops/__init__.py               2      2     0%   2-11
+src/llmops/langfuse_tracer.py      117    117     0%   8-319
+src/rag/__init__.py                 11      0   100%
+src/rag/async_utils.py             172     52    70%   120-121, 219-223, 240-303, 347-355, 398-400
+src/rag/caching.py                 194     63    68%   51, 56, 61, 66, 71, 129, 179-181, 192-217, 221, 225-243, 247-254, 258-262, 266-272, 276-288, 482, 516
+src/rag/chunking.py                 54     15    72%   90-115, 160-165, 183-194, 223-231
+src/rag/embeddings.py               50     11    78%   80-81, 118, 137-138, 150-151, 160-169, 216
+src/rag/llm.py                      65     29    55%   110-112, 116-118, 141-153, 172-186, 199, 234-240, 261-264, 274-280
+src/rag/loaders.py                  82     41    50%   83, 88, 113-115, 137-174, 189-199, 227-230
+src/rag/pipeline.py                101     31    69%   89-95, 100-105, 115-117, 122-144, 220-235, 278-279, 298-299
+src/rag/reranking.py                92     68    26%   46-49, 54-65, 84-117, 136-138, 143-147, 166-197, 219-227, 238-255, 272-281
+src/rag/retrieval.py                80     50    38%   64-75, 114-120, 145-193, 215-216, 228-233, 255-257, 261-267, 284-285, 311-315
+src/rag/vectorstore.py              78     44    44%   63, 101-120, 139-153, 172-188, 192-201, 220-222, 236, 251
+--------------------------------------------------------------
+TOTAL                             1516    760    50%
+Coverage XML written to file coverage.xml
+=========================== short test summary info ============================
+FAILED tests/integration/test_api.py::TestHealthEndpoints::test_readiness_check - assert 404 in [200, 503]
+ +  where 404 = <Response [404 Not Found]>.status_code
+FAILED tests/integration/test_api.py::TestHealthEndpoints::test_liveness_check - assert 404 == 200
+ +  where 404 = <Response [404 Not Found]>.status_code
+FAILED tests/integration/test_api.py::TestQueryEndpoints::test_query_endpoint - AttributeError: <module 'src.api.routes.query' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/query.py'> does not have the attribute 'RAGPipeline'
+FAILED tests/integration/test_api.py::TestIngestEndpoints::test_ingest_text - AttributeError: <module 'src.api.routes.ingest' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/ingest.py'> does not have the attribute 'DocumentIngester'
+FAILED tests/integration/test_api.py::TestErrorHandling::test_internal_error_handling - AttributeError: <module 'src.api.routes.query' from '/home/runner/work/RAG-docs-assistant/RAG-docs-assistant/src/api/routes/query.py'> does not have the attribute 'RAGPipeline'
+=================== 5 failed, 69 passed, 1 warning in 23.42s ===================
+Error: Process completed with exit code 1.
