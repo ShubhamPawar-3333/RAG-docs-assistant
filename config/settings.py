@@ -52,7 +52,13 @@ class Settings(BaseSettings):
     api_host: str = Field(default="0.0.0.0", alias="API_HOST")
     api_port: int = Field(default=8000, alias="API_PORT")
     cors_origins: list = Field(
-        default=["http://localhost:3000", "http://localhost:8501"],
+        default=[
+            "http://localhost:3000",
+            "http://localhost:8501",
+            "http://localhost:7860",
+            "https://alenthussp-documind-ai.hf.space",
+            "https://huggingface.co",
+        ],
         alias="CORS_ORIGINS"
     )
 
