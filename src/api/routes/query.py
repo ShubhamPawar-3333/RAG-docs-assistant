@@ -5,7 +5,6 @@ Handles document querying with RAG pipeline.
 """
 
 import logging
-from typing import AsyncGenerator
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse

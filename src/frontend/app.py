@@ -8,7 +8,6 @@ Chat interface for querying documents.
 import streamlit as st
 import requests
 from typing import Optional
-import time
 import os
 
 # Page configuration

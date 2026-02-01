@@ -5,7 +5,7 @@ Provides endpoints for monitoring API health and readiness.
 """
 
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from src.api.models import HealthResponse, DetailedHealthResponse, ComponentHealth
 from config.settings import settings
