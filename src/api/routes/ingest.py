@@ -4,6 +4,7 @@ Ingest Routes
 Handles document ingestion into the vector store.
 """
 
+import os
 import logging
 import tempfile
 from pathlib import Path
