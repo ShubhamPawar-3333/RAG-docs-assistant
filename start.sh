@@ -20,4 +20,4 @@ streamlit run src/frontend/app.py \
     --browser.gatherUsageStats false \
     --browser.serverAddress aienthussp-rag-documind-ai.hf.space \
     --browser.serverPort 443 \
-    --server.enableXsrfProtection true
+    --server.enableXsrfProtection false
