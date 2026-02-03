@@ -33,6 +33,10 @@ class QueryRequest(BaseModel):
         default=True,
         description="Whether to include source documents in response"
     )
+    api_key: Optional[str] = Field(
+        default=None,
+        description="User-provided Gemini API key (BYOK)"
+    )
 
 
 class SourceDocument(BaseModel):

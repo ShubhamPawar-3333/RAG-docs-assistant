@@ -100,6 +100,10 @@ if "collection_name" not in st.session_state:
 if "collection_updated" not in st.session_state:
     st.session_state.collection_updated = {}
 
+# User-provided API key (BYOK)
+if "user_api_key" not in st.session_state:
+    st.session_state.user_api_key = ""
+
 
 def get_current_messages():
     """Get messages for the current collection."""
@@ -134,17 +138,22 @@ def mark_collection_updated(collection_name: str):
 
 
 # ============== Helper Functions ==============
-def query_api(question: str, collection: str, top_k: int) -> Optional[dict]:
+def query_api(question: str, collection: str, top_k: int, api_key: str = None) -> Optional[dict]:
     """Query the RAG API."""
     try:
+        payload = {
+            "question": question,
+            "collection_name": collection,
+            "top_k": top_k,
+            "include_sources": True,
+        }
+        # Include user API key if provided (BYOK)
+        if api_key:
+            payload["api_key"] = api_key
+            
         response = requests.post(
             f"{API_BASE_URL}/api/query",
-            json={
-                "question": question,
-                "collection_name": collection,
-                "top_k": top_k,
-                "include_sources": True,
-            },
+            json=payload,
             timeout=60,
         )
         response.raise_for_status()
@@ -232,6 +241,19 @@ with st.sidebar:
         help="Number of document chunks to retrieve"
     )
     
+    # BYOK: User API Key
+    st.markdown("### 🔑 API Key (BYOK)")
+    st.session_state.user_api_key = st.text_input(
+        "Your Gemini API Key",
+        value=st.session_state.user_api_key,
+        type="password",
+        help="Enter your own Google Gemini API key. Get one free at https://aistudio.google.com/"
+    )
+    if st.session_state.user_api_key:
+        st.success("✅ Using your API key")
+    else:
+        st.info("💡 Using default key (limited)")
+    
     st.divider()
     
     # File upload
@@ -312,6 +334,7 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                 question=prompt,
                 collection=st.session_state.collection_name,
                 top_k=top_k,
+                api_key=st.session_state.user_api_key or None,
             )
             
             if result:

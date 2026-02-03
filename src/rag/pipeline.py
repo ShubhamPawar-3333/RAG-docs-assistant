@@ -151,6 +151,7 @@ class RAGPipeline:
         self,
         question: str,
         include_sources: bool = False,
+        api_key: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Query the RAG pipeline.
@@ -158,6 +159,7 @@ class RAGPipeline:
         Args:
             question: User's question.
             include_sources: Whether to include source documents.
+            api_key: Optional user-provided API key (BYOK).
             
         Returns:
             Dictionary with answer and optional sources.
@@ -175,10 +177,19 @@ class RAGPipeline:
         context = retrieval_result.get_context(separator="\n\n---\n\n")
         
         # Step 3: Generate answer using chain
-        answer = self.chain.invoke({
-            "context": context,
-            "question": question,
-        })
+        # If user provided API key, create a one-time chain with their key
+        if api_key:
+            logger.info("Using user-provided API key (BYOK)")
+            chain = self._build_chain_with_key(api_key)
+            answer = chain.invoke({
+                "context": context,
+                "question": question,
+            })
+        else:
+            answer = self.chain.invoke({
+                "context": context,
+                "question": question,
+            })
         
         logger.info(f"Generated answer: {len(answer)} characters")
         
@@ -203,6 +214,21 @@ class RAGPipeline:
             response["num_sources"] = retrieval_result.num_results
         
         return response
+    
+    def _build_chain_with_key(self, api_key: str):
+        """Build a one-time chain with user-provided API key."""
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        from langchain_core.prompts import ChatPromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
+        
+        prompt = ChatPromptTemplate.from_template(self.prompt_template)
+        llm = ChatGoogleGenerativeAI(
+            model=self.llm_model,
+            temperature=self.temperature,
+            google_api_key=api_key,
+            convert_system_message_to_human=True,
+        )
+        return prompt | llm | StrOutputParser()
     
     def stream(
         self,
