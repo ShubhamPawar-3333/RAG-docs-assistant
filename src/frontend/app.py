@@ -89,20 +89,30 @@ st.markdown("""
 
 
 # ============== Session State ==============
+# Authentication state
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if "user_api_key" not in st.session_state:
+    st.session_state.user_api_key = ""
+
+if "user_id" not in st.session_state:
+    st.session_state.user_id = ""  # Hash of API key for namespacing
+
 # Chat history per collection (key: collection_name, value: list of messages)
 if "chats" not in st.session_state:
     st.session_state.chats = {}
 
 if "collection_name" not in st.session_state:
-    st.session_state.collection_name = "documents"
+    st.session_state.collection_name = "default"
 
 # Track when collections were last updated (for context refresh notification)
 if "collection_updated" not in st.session_state:
     st.session_state.collection_updated = {}
 
-# User-provided API key (BYOK)
-if "user_api_key" not in st.session_state:
-    st.session_state.user_api_key = ""
+# User's collections list
+if "user_collections" not in st.session_state:
+    st.session_state.user_collections = ["default"]
 
 
 def get_current_messages():
@@ -138,6 +148,11 @@ def mark_collection_updated(collection_name: str):
 
 
 # ============== Helper Functions ==============
+def get_namespaced_collection(collection: str) -> str:
+    """Get collection name prefixed with user ID for isolation."""
+    return f"{st.session_state.user_id}_{collection}"
+
+
 def query_api(question: str, collection: str, top_k: int, api_key: str = None) -> Optional[dict]:
     """Query the RAG API."""
     try:
@@ -204,14 +219,103 @@ def check_api_health() -> bool:
     try:
         response = requests.get(f"{API_BASE_URL}/health", timeout=5)
         return response.status_code == 200
-    except Exception as e:
-        st.error(f"❌ API health check failed: {e}")
+    except Exception:
         return False
+
+
+def validate_api_key(api_key: str) -> bool:
+    """Validate Gemini API key by making a test call."""
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        model.generate_content("hi")  # Minimal test
+        return True
+    except Exception:
+        return False
+
+
+def get_user_id(api_key: str) -> str:
+    """Generate user ID from API key hash (first 12 chars of SHA256)."""
+    import hashlib
+    return hashlib.sha256(api_key.encode()).hexdigest()[:12]
+
+
+def show_login_page():
+    """Display the API key entry page."""
+    st.markdown("""
+    <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        text-align: center;
+    ">
+        <h1 style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        ">🧠 DocuMind AI</h1>
+        <p style="color: #666; font-size: 1.2rem; margin-bottom: 2rem;">
+            RAG-Powered Document Intelligence
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("### 🔑 Enter Your API Key")
+        st.caption("Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com/)")
+        
+        api_key = st.text_input(
+            "Gemini API Key",
+            type="password",
+            placeholder="AIza...",
+            label_visibility="collapsed"
+        )
+        
+        if st.button("🚀 Get Started", type="primary", use_container_width=True):
+            if not api_key:
+                st.error("Please enter an API key")
+            else:
+                with st.spinner("Validating API key..."):
+                    if validate_api_key(api_key):
+                        st.session_state.authenticated = True
+                        st.session_state.user_api_key = api_key
+                        st.session_state.user_id = get_user_id(api_key)
+                        st.success("✅ API key validated!")
+                        st.rerun()
+                    else:
+                        st.error("❌ Invalid API key. Please check and try again.")
+        
+        st.markdown("---")
+        st.caption("Your API key is never stored on our servers. It stays in your browser session only.")
+
+
+# ============== Authentication Gate ==============
+if not st.session_state.authenticated:
+    show_login_page()
+    st.stop()
 
 
 # ============== Sidebar ==============
 with st.sidebar:
     st.markdown("## ⚙️ Settings")
+    
+    # User info and logout
+    st.caption(f"🔑 Session: `{st.session_state.user_id}`")
+    if st.button("🚪 Logout", use_container_width=True):
+        st.session_state.authenticated = False
+        st.session_state.user_api_key = ""
+        st.session_state.user_id = ""
+        st.session_state.chats = {}
+        st.session_state.user_collections = ["default"]
+        st.rerun()
+    
+    st.divider()
     
     # API Status
     api_healthy = check_api_health()
@@ -219,17 +323,51 @@ with st.sidebar:
         st.success("✅ API Connected")
     else:
         st.error("❌ API Offline")
-        st.caption("Start the API with: `uvicorn src.api.main:app --reload`")
     
     st.divider()
     
-    # Collection settings
-    st.markdown("### 📁 Collection")
-    st.session_state.collection_name = st.text_input(
-        "Collection Name",
-        value=st.session_state.collection_name,
-        help="Name of the document collection to query"
-    )
+    # Collections list
+    st.markdown("### 📁 Collections")
+    
+    for col_name in st.session_state.user_collections:
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            is_active = col_name == st.session_state.collection_name
+            btn_type = "primary" if is_active else "secondary"
+            if st.button(
+                f"{'📂' if is_active else '📁'} {col_name}",
+                key=f"col_{col_name}",
+                use_container_width=True,
+                type=btn_type
+            ):
+                st.session_state.collection_name = col_name
+                st.rerun()
+        with col2:
+            if len(st.session_state.user_collections) > 1:  # Keep at least one
+                if st.button("🗑️", key=f"del_{col_name}"):
+                    # Delete collection from backend
+                    try:
+                        namespaced = f"{st.session_state.user_id}_{col_name}"
+                        requests.delete(f"{API_BASE_URL}/api/ingest/{namespaced}", timeout=10)
+                    except Exception:
+                        pass
+                    # Remove from local state
+                    st.session_state.user_collections.remove(col_name)
+                    if col_name in st.session_state.chats:
+                        del st.session_state.chats[col_name]
+                    if st.session_state.collection_name == col_name:
+                        st.session_state.collection_name = st.session_state.user_collections[0]
+                    st.rerun()
+    
+    # New collection input
+    new_col = st.text_input("New collection", placeholder="Enter name...")
+    if st.button("➕ Create", use_container_width=True):
+        if new_col and new_col not in st.session_state.user_collections:
+            st.session_state.user_collections.append(new_col)
+            st.session_state.collection_name = new_col
+            st.rerun()
+    
+    st.divider()
     
     # Retrieval settings
     st.markdown("### 🔍 Retrieval")
@@ -240,19 +378,6 @@ with st.sidebar:
         value=5,
         help="Number of document chunks to retrieve"
     )
-    
-    # BYOK: User API Key
-    st.markdown("### 🔑 API Key (BYOK)")
-    st.session_state.user_api_key = st.text_input(
-        "Your Gemini API Key",
-        value=st.session_state.user_api_key,
-        type="password",
-        help="Enter your own Google Gemini API key. Get one free at https://aistudio.google.com/"
-    )
-    if st.session_state.user_api_key:
-        st.success("✅ Using your API key")
-    else:
-        st.info("💡 Using default key (limited)")
     
     st.divider()
     
@@ -268,7 +393,7 @@ with st.sidebar:
     if uploaded_files:
         if st.button("📥 Ingest Files", type="primary", use_container_width=True):
             with st.spinner("Processing files..."):
-                result = ingest_files(uploaded_files, st.session_state.collection_name)
+                result = ingest_files(uploaded_files, get_namespaced_collection(st.session_state.collection_name))
                 if result and result.get("success"):
                     st.success(
                         f"✅ Ingested {result['documents_processed']} docs, "
@@ -332,9 +457,9 @@ if prompt := st.chat_input("Ask a question about your documents..."):
         with st.spinner("Thinking..."):
             result = query_api(
                 question=prompt,
-                collection=st.session_state.collection_name,
+                collection=get_namespaced_collection(st.session_state.collection_name),
                 top_k=top_k,
-                api_key=st.session_state.user_api_key or None,
+                api_key=st.session_state.user_api_key,
             )
             
             if result:

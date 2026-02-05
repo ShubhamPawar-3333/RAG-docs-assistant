@@ -166,6 +166,10 @@ class RAGPipeline:
         """
         logger.info(f"Processing query: {question[:50]}...")
         
+        # API key is required (BYOK-only mode)
+        if not api_key:
+            raise ValueError("API key is required. Please provide your Gemini API key.")
+        
         # Step 1: Retrieve relevant documents
         retrieval_result = self.retriever.retrieve(
             query=question,
@@ -176,20 +180,13 @@ class RAGPipeline:
         # Step 2: Format context
         context = retrieval_result.get_context(separator="\n\n---\n\n")
         
-        # Step 3: Generate answer using chain
-        # If user provided API key, create a one-time chain with their key
-        if api_key:
-            logger.info("Using user-provided API key (BYOK)")
-            chain = self._build_chain_with_key(api_key)
-            answer = chain.invoke({
-                "context": context,
-                "question": question,
-            })
-        else:
-            answer = self.chain.invoke({
-                "context": context,
-                "question": question,
-            })
+        # Step 3: Generate answer using user's API key
+        logger.info("Using user-provided API key (BYOK)")
+        chain = self._build_chain_with_key(api_key)
+        answer = chain.invoke({
+            "context": context,
+            "question": question,
+        })
         
         logger.info(f"Generated answer: {len(answer)} characters")
         
