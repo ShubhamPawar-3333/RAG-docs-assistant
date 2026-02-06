@@ -152,6 +152,7 @@ class RAGPipeline:
         question: str,
         include_sources: bool = False,
         api_key: Optional[str] = None,
+        provider: str = "gemini",
     ) -> Dict[str, Any]:
         """
         Query the RAG pipeline.
@@ -159,7 +160,8 @@ class RAGPipeline:
         Args:
             question: User's question.
             include_sources: Whether to include source documents.
-            api_key: Optional user-provided API key (BYOK).
+            api_key: User-provided API key (BYOK).
+            provider: LLM provider (gemini, openai, anthropic, groq).
             
         Returns:
             Dictionary with answer and optional sources.
@@ -168,7 +170,7 @@ class RAGPipeline:
         
         # API key is required (BYOK-only mode)
         if not api_key:
-            raise ValueError("API key is required. Please provide your Gemini API key.")
+            raise ValueError("API key is required. Please provide your API key.")
         
         # Step 1: Retrieve relevant documents
         retrieval_result = self.retriever.retrieve(
@@ -180,9 +182,9 @@ class RAGPipeline:
         # Step 2: Format context
         context = retrieval_result.get_context(separator="\n\n---\n\n")
         
-        # Step 3: Generate answer using user's API key
-        logger.info("Using user-provided API key (BYOK)")
-        chain = self._build_chain_with_key(api_key)
+        # Step 3: Generate answer using user's API key and provider
+        logger.info(f"Using provider: {provider}")
+        chain = self._build_chain_with_key(api_key, provider)
         answer = chain.invoke({
             "context": context,
             "question": question,
@@ -212,19 +214,45 @@ class RAGPipeline:
         
         return response
     
-    def _build_chain_with_key(self, api_key: str):
-        """Build a one-time chain with user-provided API key."""
-        from langchain_google_genai import ChatGoogleGenerativeAI
+    def _build_chain_with_key(self, api_key: str, provider: str = "gemini"):
+        """Build a one-time chain with user-provided API key and provider."""
         from langchain_core.prompts import ChatPromptTemplate
         from langchain_core.output_parsers import StrOutputParser
         
         prompt = ChatPromptTemplate.from_template(self.prompt_template)
-        llm = ChatGoogleGenerativeAI(
-            model=self.llm_model,
-            temperature=self.temperature,
-            google_api_key=api_key,
-            convert_system_message_to_human=True,
-        )
+        
+        if provider == "gemini":
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            llm = ChatGoogleGenerativeAI(
+                model="gemini-2.0-flash",
+                temperature=self.temperature,
+                google_api_key=api_key,
+                convert_system_message_to_human=True,
+            )
+        elif provider == "openai":
+            from langchain_openai import ChatOpenAI
+            llm = ChatOpenAI(
+                model="gpt-4o-mini",
+                temperature=self.temperature,
+                api_key=api_key,
+            )
+        elif provider == "anthropic":
+            from langchain_anthropic import ChatAnthropic
+            llm = ChatAnthropic(
+                model="claude-3-haiku-20240307",
+                temperature=self.temperature,
+                api_key=api_key,
+            )
+        elif provider == "groq":
+            from langchain_groq import ChatGroq
+            llm = ChatGroq(
+                model="llama-3.3-70b-versatile",
+                temperature=self.temperature,
+                api_key=api_key,
+            )
+        else:
+            raise ValueError(f"Unsupported provider: {provider}")
+        
         return prompt | llm | StrOutputParser()
     
     def stream(

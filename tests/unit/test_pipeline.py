@@ -97,8 +97,8 @@ class TestRAGPipeline:
         
         pipeline = RAGPipeline()
         
-        # Pass api_key (required in BYOK mode)
-        result = pipeline.query("What is test?", include_sources=True, api_key="test-api-key")
+        # Pass api_key and provider (required in BYOK mode)
+        result = pipeline.query("What is test?", include_sources=True, api_key="test-api-key", provider="gemini")
         
         assert "answer" in result
         assert result["answer"] == "This is the answer."

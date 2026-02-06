@@ -35,7 +35,11 @@ class QueryRequest(BaseModel):
     )
     api_key: Optional[str] = Field(
         default=None,
-        description="User-provided Gemini API key (BYOK)"
+        description="User-provided API key (BYOK)"
+    )
+    provider: str = Field(
+        default="gemini",
+        description="LLM provider: gemini, openai, anthropic, groq"
     )
 
 

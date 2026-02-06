@@ -99,6 +99,45 @@ if "user_api_key" not in st.session_state:
 if "user_id" not in st.session_state:
     st.session_state.user_id = ""  # Hash of API key for namespacing
 
+if "user_provider" not in st.session_state:
+    st.session_state.user_provider = "gemini"  # Default provider
+
+# Provider configurations
+PROVIDERS = {
+    "gemini": {
+        "name": "Gemini",
+        "icon": "🔷",
+        "tier": "Free",
+        "url": "https://aistudio.google.com/",
+        "prefix": "AIza",
+        "model": "gemini-2.0-flash",
+    },
+    "openai": {
+        "name": "OpenAI",
+        "icon": "🟢",
+        "tier": "Paid",
+        "url": "https://platform.openai.com/api-keys",
+        "prefix": "sk-",
+        "model": "gpt-4o-mini",
+    },
+    "anthropic": {
+        "name": "Claude",
+        "icon": "🟠",
+        "tier": "Paid",
+        "url": "https://console.anthropic.com/",
+        "prefix": "sk-ant",
+        "model": "claude-3-haiku-20240307",
+    },
+    "groq": {
+        "name": "Groq",
+        "icon": "⚡",
+        "tier": "Free",
+        "url": "https://console.groq.com/keys",
+        "prefix": "gsk_",
+        "model": "llama-3.3-70b-versatile",
+    },
+}
+
 # Chat history per collection (key: collection_name, value: list of messages)
 if "chats" not in st.session_state:
     st.session_state.chats = {}
@@ -153,7 +192,7 @@ def get_namespaced_collection(collection: str) -> str:
     return f"{st.session_state.user_id}_{collection}"
 
 
-def query_api(question: str, collection: str, top_k: int, api_key: str = None) -> Optional[dict]:
+def query_api(question: str, collection: str, top_k: int, api_key: str = None, provider: str = "gemini") -> Optional[dict]:
     """Query the RAG API."""
     try:
         payload = {
@@ -161,10 +200,9 @@ def query_api(question: str, collection: str, top_k: int, api_key: str = None) -
             "collection_name": collection,
             "top_k": top_k,
             "include_sources": True,
+            "api_key": api_key,
+            "provider": provider,
         }
-        # Include user API key if provided (BYOK)
-        if api_key:
-            payload["api_key"] = api_key
             
         response = requests.post(
             f"{API_BASE_URL}/api/query",
@@ -223,10 +261,12 @@ def check_api_health() -> bool:
         return False
 
 
-def validate_api_key(api_key: str) -> bool:
-    """Basic format check only (no API call)."""
-    # Gemini API keys start with "AIza" and are ~39 chars
-    return api_key.startswith("AIza") and len(api_key) > 30
+def validate_api_key(api_key: str, provider: str) -> bool:
+    """Basic format check based on provider."""
+    if provider not in PROVIDERS:
+        return False
+    prefix = PROVIDERS[provider]["prefix"]
+    return api_key.startswith(prefix) and len(api_key) > 20
 
 
 def get_user_id(api_key: str) -> str:
@@ -236,14 +276,14 @@ def get_user_id(api_key: str) -> str:
 
 
 def show_login_page():
-    """Display the API key entry page."""
+    """Display the API key entry page with provider cards."""
     st.markdown("""
     <div style="
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        min-height: 60vh;
+        min-height: 30vh;
         text-align: center;
     ">
         <h1 style="
@@ -253,40 +293,63 @@ def show_login_page():
             font-size: 3rem;
             margin-bottom: 0.5rem;
         ">🧠 DocuMind AI</h1>
-        <p style="color: #666; font-size: 1.2rem; margin-bottom: 2rem;">
+        <p style="color: #666; font-size: 1.2rem; margin-bottom: 1rem;">
             RAG-Powered Document Intelligence
         </p>
     </div>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.markdown("### 🔑 Enter Your API Key")
-        st.caption("Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com/)")
-        
-        api_key = st.text_input(
-            "Gemini API Key",
-            type="password",
-            placeholder="AIza...",
-            label_visibility="collapsed"
-        )
-        
-        if st.button("🚀 Get Started", type="primary", use_container_width=True):
-            if not api_key:
-                st.error("Please enter an API key")
+    # Provider selection cards
+    st.markdown("### Choose Your AI Provider")
+    
+    cols = st.columns(4)
+    for idx, (provider_key, provider_info) in enumerate(PROVIDERS.items()):
+        with cols[idx]:
+            is_selected = st.session_state.user_provider == provider_key
+            btn_type = "primary" if is_selected else "secondary"
+            
+            if st.button(
+                f"{provider_info['icon']} {provider_info['name']}\n[{provider_info['tier']}]",
+                key=f"provider_{provider_key}",
+                use_container_width=True,
+                type=btn_type,
+            ):
+                st.session_state.user_provider = provider_key
+                st.rerun()
+            
+            st.markdown(
+                f"<a href='{provider_info['url']}' target='_blank' style='font-size: 0.8rem;'>Get Key →</a>",
+                unsafe_allow_html=True
+            )
+    
+    st.markdown("---")
+    
+    # API Key input
+    selected = PROVIDERS[st.session_state.user_provider]
+    st.markdown(f"### 🔑 Enter Your {selected['name']} API Key")
+    
+    api_key = st.text_input(
+        "API Key",
+        type="password",
+        placeholder=f"{selected['prefix']}...",
+        label_visibility="collapsed"
+    )
+    
+    if st.button("🚀 Get Started", type="primary", use_container_width=True):
+        if not api_key:
+            st.error("Please enter an API key")
+        else:
+            if validate_api_key(api_key, st.session_state.user_provider):
+                st.session_state.authenticated = True
+                st.session_state.user_api_key = api_key
+                st.session_state.user_id = get_user_id(api_key)
+                st.success("✅ Ready to go!")
+                st.rerun()
             else:
-                with st.spinner("Validating API key..."):
-                    if validate_api_key(api_key):
-                        st.session_state.authenticated = True
-                        st.session_state.user_api_key = api_key
-                        st.session_state.user_id = get_user_id(api_key)
-                        st.success("✅ API key validated!")
-                        st.rerun()
-                    else:
-                        st.error("❌ Invalid API key. Please check and try again.")
-        
-        st.markdown("---")
-        st.caption("Your API key is never stored on our servers. It stays in your browser session only.")
+                st.error(f"❌ Invalid key format. {selected['name']} keys start with '{selected['prefix']}'")
+    
+    st.markdown("---")
+    st.caption("Your API key stays in your browser session only. Never stored on servers.")
 
 
 # ============== Authentication Gate ==============
@@ -454,6 +517,7 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                 collection=get_namespaced_collection(st.session_state.collection_name),
                 top_k=top_k,
                 api_key=st.session_state.user_api_key,
+                provider=st.session_state.user_provider,
             )
             
             if result:

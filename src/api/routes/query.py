@@ -49,7 +49,8 @@ async def query_documents(request: QueryRequest):
     - **collection_name**: Document collection to search
     - **top_k**: Number of documents to retrieve
     - **include_sources**: Include source documents in response
-    - **api_key**: Optional user-provided Gemini API key (BYOK)
+    - **api_key**: User-provided API key (BYOK)
+    - **provider**: LLM provider (gemini, openai, anthropic, groq)
     """
     try:
         logger.info(f"Query received: {request.question[:50]}...")
@@ -57,11 +58,12 @@ async def query_documents(request: QueryRequest):
         # Get pipeline
         pipeline = get_pipeline(request.collection_name, request.top_k)
         
-        # Execute query with optional user API key
+        # Execute query with user API key and provider
         result = pipeline.query(
             question=request.question,
             include_sources=request.include_sources,
-            api_key=request.api_key,  # Pass user's API key if provided
+            api_key=request.api_key,
+            provider=request.provider,
         )
         
         # Build response
