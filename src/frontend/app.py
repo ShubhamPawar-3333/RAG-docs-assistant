@@ -224,15 +224,9 @@ def check_api_health() -> bool:
 
 
 def validate_api_key(api_key: str) -> bool:
-    """Validate Gemini API key by making a test call."""
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
-        model.generate_content("hi")  # Minimal test
-        return True
-    except Exception:
-        return False
+    """Basic format check only (no API call)."""
+    # Gemini API keys start with "AIza" and are ~39 chars
+    return api_key.startswith("AIza") and len(api_key) > 30
 
 
 def get_user_id(api_key: str) -> str:
