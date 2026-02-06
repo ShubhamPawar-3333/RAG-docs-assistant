@@ -4,7 +4,7 @@ Unit Tests for RAG Pipeline
 Tests for the core RAG pipeline functionality.
 """
 
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 
 class TestRAGPipeline:
@@ -75,8 +75,8 @@ class TestRAGPipeline:
         assert "embedding_model" in info
     
     @patch("src.rag.pipeline.RAGPipeline.retriever")
-    @patch("src.rag.pipeline.RAGPipeline.chain")
-    def test_query_with_mocked_components(self, mock_chain, mock_retriever):
+    @patch("src.rag.pipeline.RAGPipeline._build_chain_with_key")
+    def test_query_with_mocked_components(self, mock_build_chain, mock_retriever):
         """Test query with mocked retriever and chain."""
         from src.rag.pipeline import RAGPipeline
         from src.rag.retrieval import RetrievalResult
@@ -89,11 +89,16 @@ class TestRAGPipeline:
             query="test query",
         )
         mock_retriever.retrieve.return_value = mock_result
+        
+        # Mock the chain built with user's API key
+        mock_chain = MagicMock()
         mock_chain.invoke.return_value = "This is the answer."
+        mock_build_chain.return_value = mock_chain
         
         pipeline = RAGPipeline()
         
-        result = pipeline.query("What is test?", include_sources=True)
+        # Pass api_key (required in BYOK mode)
+        result = pipeline.query("What is test?", include_sources=True, api_key="test-api-key")
         
         assert "answer" in result
         assert result["answer"] == "This is the answer."
