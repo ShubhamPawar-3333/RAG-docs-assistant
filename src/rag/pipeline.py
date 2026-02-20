@@ -19,16 +19,21 @@ logger = logging.getLogger(__name__)
 
 
 # Default RAG prompt template
-DEFAULT_RAG_PROMPT = """You are a helpful documentation assistant.
-Answer the question based ONLY on the following context.
-If the context doesn't contain enough information to answer, say so honestly.
+DEFAULT_RAG_PROMPT = """You are an expert documentation assistant. Your task is to provide detailed, accurate answers based on the provided context.
+
+Instructions:
+- Answer the question using the information from the context below.
+- Synthesize information from multiple context sections if needed.
+- If the context contains partial information, provide what you can and note what's missing.
+- Use specific details, quotes, and references from the context.
+- Structure your answer clearly with bullet points or paragraphs as appropriate.
 
 Context:
 {context}
 
 Question: {question}
 
-Answer:"""
+Detailed Answer:"""
 
 
 class RAGPipeline:

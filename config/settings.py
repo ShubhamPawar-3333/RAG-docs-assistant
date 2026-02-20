@@ -36,9 +36,9 @@ class Settings(BaseSettings):
     upstash_redis_token: Optional[str] = Field(default=None, alias="UPSTASH_REDIS_TOKEN")
 
     # RAG Settings
-    chunk_size: int = Field(default=1000, alias="CHUNK_SIZE")
+    chunk_size: int = Field(default=1500, alias="CHUNK_SIZE")
     chunk_overlap: int = Field(default=200, alias="CHUNK_OVERLAP")
-    top_k_results: int = Field(default=5, alias="TOP_K_RESULTS")
+    top_k_results: int = Field(default=8, alias="TOP_K_RESULTS")
 
     # Model Settings
     default_model: str = Field(default="gemini-2.5-flash", alias="DEFAULT_MODEL")
