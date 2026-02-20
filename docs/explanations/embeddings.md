@@ -28,14 +28,14 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    EmbeddingsManager                             │
-│                                                                  │
-│  ┌─────────────────┐    ┌──────────────────────────────────┐   │
-│  │ EMBEDDING_MODELS│    │  HuggingFaceEmbeddings           │   │
-│  │ (Registry)      │───►│  _embeddings (lazy loaded)       │   │
-│  └─────────────────┘    └──────────────────────────────────┘   │
-│                                                                  │
-│   Model Aliases:                                                 │
+│                    EmbeddingsManager                            │
+│                                                                 │
+│  ┌─────────────────┐    ┌──────────────────────────────────┐    │
+│  │ EMBEDDING_MODELS│    │  HuggingFaceEmbeddings           │    │
+│  │ (Registry)      │───►│  _embeddings (lazy loaded)       │    │
+│  └─────────────────┘    └──────────────────────────────────┘    │
+│                                                                 │
+│   Model Aliases:                                                │
 │   ├── "all-MiniLM-L6-v2"    → sentence-transformers/...         │
 │   ├── "all-mpnet-base-v2"   → sentence-transformers/...         │
 │   ├── "bge-small-en-v1.5"   → BAAI/...                          │
@@ -44,10 +44,10 @@
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    SINGLETON PATTERN                             │
-│                                                                  │
+│                    SINGLETON PATTERN                            │
+│                                                                 │
 │  get_embeddings() ──► _default_manager ──► Reuse same instance  │
-│                                                                  │
+│                                                                 │
 │  First call:  Load model (slow, ~5 sec)                         │
 │  Next calls:  Return cached instance (instant)                  │
 └─────────────────────────────────────────────────────────────────┘
