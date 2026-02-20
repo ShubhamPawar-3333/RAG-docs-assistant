@@ -160,16 +160,14 @@ class RAGPipeline:
         provider: str = "gemini",
     ) -> Dict[str, Any]:
         """
-        Query the RAG pipeline.
+        Query the RAG pipeline with dynamic retrieval.
         
-        Args:
-            question: User's question.
-            include_sources: Whether to include source documents.
-            api_key: User-provided API key (BYOK).
-            provider: LLM provider (gemini, openai, anthropic, groq).
-            
-        Returns:
-            Dictionary with answer and optional sources.
+        Uses a two-stage approach:
+        1. Fetch 20 candidate chunks broadly
+        2. Filter by relevance threshold, keep up to 15
+        
+        This ensures complex questions get more context while
+        simple questions don't get noise.
         """
         logger.info(f"Processing query: {question[:50]}...")
         
@@ -177,17 +175,48 @@ class RAGPipeline:
         if not api_key:
             raise ValueError("API key is required. Please provide your API key.")
         
-        # Step 1: Retrieve relevant documents
+        # Step 1: Broad retrieval — fetch 20 candidates
+        FETCH_K = 20
+        MAX_CHUNKS = 15
+        DISTANCE_THRESHOLD = 1.5  # ChromaDB distance: lower = more similar
+        
         retrieval_result = self.retriever.retrieve(
             query=question,
-            k=self.top_k,
+            k=FETCH_K,
             include_scores=True,
         )
         
-        # Step 2: Format context
+        # Step 2: Dynamic filtering — keep chunks below distance threshold
+        if retrieval_result.scores:
+            filtered_docs = []
+            filtered_scores = []
+            for doc, score in zip(retrieval_result.documents, retrieval_result.scores):
+                if score <= DISTANCE_THRESHOLD:
+                    filtered_docs.append(doc)
+                    filtered_scores.append(score)
+            
+            # Cap at MAX_CHUNKS to avoid exceeding LLM context
+            filtered_docs = filtered_docs[:MAX_CHUNKS]
+            filtered_scores = filtered_scores[:MAX_CHUNKS]
+            
+            logger.info(
+                f"Dynamic retrieval: {len(retrieval_result.documents)} candidates → "
+                f"{len(filtered_docs)} relevant (threshold={DISTANCE_THRESHOLD})"
+            )
+            
+            # Update retrieval result with filtered data
+            from src.rag.retrieval import RetrievalResult
+            retrieval_result = RetrievalResult(
+                documents=filtered_docs,
+                scores=filtered_scores,
+                query=question,
+                metadata={"dynamic_retrieval": True, "threshold": DISTANCE_THRESHOLD},
+            )
+        
+        # Step 3: Format context
         context = retrieval_result.get_context(separator="\n\n---\n\n")
         
-        # Step 3: Generate answer using user's API key and provider
+        # Step 4: Generate answer using user's API key and provider
         logger.info(f"Using provider: {provider}")
         chain = self._build_chain_with_key(api_key, provider)
         answer = chain.invoke({
