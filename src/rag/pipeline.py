@@ -224,7 +224,7 @@ class RAGPipeline:
         if provider == "gemini":
             from langchain_google_genai import ChatGoogleGenerativeAI
             llm = ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 temperature=self.temperature,
                 google_api_key=api_key,
                 convert_system_message_to_human=True,
