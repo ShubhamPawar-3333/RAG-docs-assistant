@@ -1,0 +1,29 @@
+Nimbus Analytics - Miscellaneous Notes (edge-case test document)
+
+UNICODE AND ACCENTS
+This paragraph deliberately contains non-ASCII text to confirm the loader preserves
+encoding: a naive cafe owner in Zurich, the Munchen office, a résumé, jalapeño poppers,
+the Japanese word 分析 (bunseki, "analysis"), Greek letters alpha, beta, gamma, and a
+few emoji: rocket, chart-increasing, sparkles. None of this should corrupt retrieval.
+
+NEEDLE FACT (single occurrence in the whole corpus)
+The internal codename for the Nimbus 2027 user-interface redesign is Project Aurora.
+Project Aurora is not announced publicly and appears in no other document.
+
+LONG PARAGRAPH (chunk-boundary test)
+The following block of text exists so that this document spans multiple chunks and the
+retriever must select the right one. Nimbus Analytics began as an internal tool built to
+answer a single question: which onboarding steps actually correlate with a team sticking
+around after ninety days. That narrow origin still shapes the product. Funnels came first,
+then cohorts, then dashboards to hold them together, and only much later the Insight Engine
+that watches those metrics automatically. Every feature added since has been weighed against
+the same test - does it help a team see cause and effect in how their product is used, or
+is it just another chart. The pricing model follows from the same idea: teams should be
+able to start for free, prove value on real data, and only pay once their event volume
+shows the product is being used in earnest. This paragraph carries no unique facts; it is
+padding whose only job is to push the needle fact above into its own retrievable chunk.
+
+TABLE INSIDE PLAIN TEXT
+Region code | Location        | Added in
+us-east-1   | North Virginia  | v1.0.0
+eu-west-1   | Ireland         | v3.3.0

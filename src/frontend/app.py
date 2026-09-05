@@ -23,45 +23,16 @@ API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 
 # ============== Custom CSS ==============
+# NOTE: the app is pinned to the dark theme (.streamlit/config.toml). Any custom
+# element needs BOTH background and text colour set explicitly - a bare element
+# inherits the theme's near-white text, which was invisible on the old
+# near-white source cards ("shows white only"). Source snippets now use native
+# st.container components (see render_sources) instead of injected HTML.
 st.markdown("""
 <style>
-    /* Main container */
-    .main {
-        padding: 1rem 2rem;
-    }
-    
-    /* Chat messages */
-    .user-message {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 20px 20px 5px 20px;
-        margin: 0.5rem 0;
-        max-width: 80%;
-        margin-left: auto;
-    }
-    
-    .assistant-message {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
-        color: #333;
-        padding: 1rem 1.5rem;
-        border-radius: 20px 20px 20px 5px;
-        margin: 0.5rem 0;
-        max-width: 80%;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    
-    /* Source cards */
-    .source-card {
-        background: #f8f9fa;
-        border-left: 4px solid #667eea;
-        padding: 0.75rem;
-        margin: 0.5rem 0;
-        border-radius: 0 8px 8px 0;
-        font-size: 0.9rem;
-    }
-    
-    /* Header styling */
+    .main { padding: 1rem 2rem; }
+
+    /* Header banner (the only injected-HTML element left) */
     .header-container {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 2rem;
@@ -69,20 +40,6 @@ st.markdown("""
         margin-bottom: 2rem;
         color: white;
         text-align: center;
-    }
-    
-    /* Sidebar styling */
-    .sidebar .sidebar-content {
-        background: #f8f9fa;
-    }
-    
-    /* Upload area */
-    .upload-area {
-        border: 2px dashed #667eea;
-        border-radius: 10px;
-        padding: 2rem;
-        text-align: center;
-        background: #f8f9ff;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -172,6 +129,30 @@ def add_message(role: str, content: str, sources: list = None):
     if sources:
         message["sources"] = sources
     st.session_state.chats[collection].append(message)
+
+
+def render_sources(sources: list):
+    """Render retrieved source snippets inside an expander.
+
+    Uses Streamlit-native containers rather than raw HTML: indented HTML passed
+    to st.markdown gets parsed as a code block, and a bare <div> inherits the
+    dark theme's near-white text colour onto a near-white card (invisible).
+    """
+    if not sources:
+        return
+    with st.expander(f"📚 View Sources ({len(sources)})", expanded=False):
+        for i, source in enumerate(sources, 1):
+            score = source.get("score")
+            label = f"**Source {i}**"
+            if isinstance(score, (int, float)):
+                label += f" · relevance {score:.2f}"
+            meta = source.get("metadata") or {}
+            name = meta.get("file_name") or meta.get("source")
+            if name:
+                label += f" · `{name}`"
+            with st.container(border=True):
+                st.markdown(label)
+                st.caption((source.get("content", "") or "").strip()[:300] + "…")
 
 
 def clear_current_chat():
@@ -490,16 +471,7 @@ with chat_container:
             
             # Show sources for assistant messages
             if message["role"] == "assistant" and message.get("sources"):
-                with st.expander("📚 View Sources", expanded=False):
-                    for i, source in enumerate(message["sources"], 1):
-                        st.markdown(f"""
-                        <div class="source-card">
-                            <strong>Source {i}</strong> 
-                            {f"(Score: {source.get('score', 0):.2f})" if source.get('score') else ""}
-                            <br>
-                            <small>{source.get('content', '')[:200]}...</small>
-                        </div>
-                        """, unsafe_allow_html=True)
+                render_sources(message["sources"])
 
 # Chat input
 if prompt := st.chat_input("Ask a question about your documents..."):
@@ -528,19 +500,9 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                 
                 # Store message with sources
                 add_message("assistant", answer, sources)
-                
+
                 # Show sources
-                if sources:
-                    with st.expander("📚 View Sources", expanded=False):
-                        for i, source in enumerate(sources, 1):
-                            st.markdown(f"""
-                            <div class="source-card">
-                                <strong>Source {i}</strong>
-                                {f"(Score: {source.get('score', 0):.2f})" if source.get('score') else ""}
-                                <br>
-                                <small>{source.get('content', '')[:200]}...</small>
-                            </div>
-                            """, unsafe_allow_html=True)
+                render_sources(sources)
             else:
                 error_msg = "Failed to get a response. Please check the API connection."
                 st.error(error_msg)

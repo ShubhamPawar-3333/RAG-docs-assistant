@@ -8,6 +8,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.routes import query, ingest, health
@@ -35,7 +36,18 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting DocuMind AI API...")
     logger.info(f"Environment: {settings.environment}")
-    
+
+    # Warm the embedding model now, in a worker thread, so the first ingest or
+    # query request doesn't pay a multi-second (potentially download-bound)
+    # stall while holding the event loop.
+    try:
+        from src.rag.embeddings import get_embeddings
+
+        await run_in_threadpool(lambda: get_embeddings().embed_query("warmup"))
+        logger.info("Embedding model warmed up")
+    except Exception as e:  # noqa: BLE001 - startup must not hard-fail on this
+        logger.warning(f"Embedding warmup skipped: {e}")
+
     yield
     
     # Shutdown

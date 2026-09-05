@@ -1,0 +1,35 @@
+Nimbus Analytics - Frequently Asked Questions
+
+Q: I forgot my password. How do I reset it?
+A: Click "Forgot password" on the login screen. We email a reset link that is valid
+   for 60 minutes. If it expires, request a new one.
+
+Q: Which browsers are supported?
+A: The latest two versions of Chrome, Firefox, Safari, and Edge. Internet Explorer
+   is not supported.
+
+Q: How large can a CSV export be?
+A: The in-app CSV export is capped at 1,000,000 rows. For larger extracts use the
+   Export API, which has no row limit.
+
+Q: What timezone are the charts shown in?
+A: All timestamps in the UI are displayed in the workspace's configured timezone.
+   New workspaces default to UTC. Changing the workspace timezone re-renders every
+   report but does not alter the stored event data.
+
+Q: How quickly do events show up?
+A: Events normally appear in dashboards and Live View within 3 minutes of being sent.
+   During large backfills the delay can be longer.
+
+Q: Is there a mobile app?
+A: There is a Nimbus iOS app for viewing dashboards on the go. There is no Android
+   app. Note that this is separate from the Android *SDK*, which is used to send
+   events from your own Android product.
+
+Q: Can I delete a single user's data?
+A: Yes. Use "Delete user data" in Project settings, or call DELETE /users/{id} in the
+   Events API. The deletion propagates to backups within 24 hours.
+
+Q: Why is my funnel showing fewer users than my dashboard?
+A: Funnels only count users who completed the first step within the selected
+   conversion window. Widen the conversion window or the date range to include more users.

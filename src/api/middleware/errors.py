@@ -92,8 +92,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._requests = {}  # IP -> list of timestamps
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        # Get client IP
-        client_ip = request.client.host if request.client else "unknown"
+        # Get client IP. Behind the HF Spaces proxy request.client.host is the
+        # proxy, so prefer the first hop in X-Forwarded-For when present.
+        forwarded = request.headers.get("x-forwarded-for")
+        if forwarded:
+            client_ip = forwarded.split(",")[0].strip()
+        else:
+            client_ip = request.client.host if request.client else "unknown"
         
         # Skip rate limiting for health checks
         if request.url.path.startswith("/health") or request.url.path in ["/ready", "/live"]:

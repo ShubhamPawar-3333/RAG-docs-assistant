@@ -15,7 +15,6 @@ from typing import List, Optional, Union
 from langchain_community.document_loaders import (
     PyPDFLoader,
     TextLoader,
-    UnstructuredMarkdownLoader,
 )
 from langchain_core.documents import Document
 
@@ -43,11 +42,17 @@ class MultiFormatDocumentLoader:
         >>> docs = loader.load_directory("./documents")
     """
     
-    # Supported file extensions and their loaders
+    # Supported file extensions and their loaders.
+    #
+    # Markdown is handled with the plain TextLoader rather than
+    # UnstructuredMarkdownLoader: the latter pulls in `unstructured`, which
+    # downloads an NLTK/spaCy model at runtime on first use and fails hard in
+    # offline or locked-down environments (and behind strict TLS). Markdown is
+    # already text, so retrieval quality is unaffected.
     SUPPORTED_EXTENSIONS = {
         ".pdf": PyPDFLoader,
-        ".md": UnstructuredMarkdownLoader,
-        ".markdown": UnstructuredMarkdownLoader,
+        ".md": TextLoader,
+        ".markdown": TextLoader,
         ".txt": TextLoader,
     }
     
@@ -93,8 +98,8 @@ class MultiFormatDocumentLoader:
         loader_class = self.SUPPORTED_EXTENSIONS[extension]
         
         try:
-            # TextLoader needs encoding parameter
-            if extension == ".txt":
+            # TextLoader needs an explicit encoding parameter
+            if loader_class is TextLoader:
                 loader = loader_class(str(file_path), encoding=self.encoding)
             else:
                 loader = loader_class(str(file_path))

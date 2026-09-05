@@ -1,0 +1,4 @@
+plan,price,events
+Free,0,100000
+Pro,99,5000000
+Enterprise,custom,unlimited

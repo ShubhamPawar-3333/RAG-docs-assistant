@@ -31,12 +31,18 @@ class MultiFormatDocumentLoader:
 
 ```python
 SUPPORTED_EXTENSIONS = {
-    ".pdf": PyPDFLoader,         # LangChain's PDF loader
-    ".md": UnstructuredMarkdownLoader,  # Markdown with structure preservation
-    ".markdown": UnstructuredMarkdownLoader,
-    ".txt": TextLoader,          # Plain text
+    ".pdf": PyPDFLoader,   # LangChain's PDF loader
+    ".md": TextLoader,     # Markdown read as plain text (see note below)
+    ".markdown": TextLoader,
+    ".txt": TextLoader,    # Plain text
 }
 ```
+
+> **Note:** `.md` was previously mapped to `UnstructuredMarkdownLoader`. That loader
+> pulls in `unstructured`, which downloads a spaCy model at runtime on first use and
+> fails hard offline / behind strict TLS, making every Markdown ingest return HTTP 500.
+> Markdown is already text, so `TextLoader` is used instead. See
+> [`docs/fixes/2026-09-05-ingestion-and-event-loop-blocking.md`](../fixes/2026-09-05-ingestion-and-event-loop-blocking.md).
 
 **Why this design?**
 - **Dictionary as registry** — O(1) lookup for file type → loader mapping
