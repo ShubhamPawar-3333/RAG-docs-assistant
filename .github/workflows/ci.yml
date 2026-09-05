@@ -105,30 +105,44 @@ jobs:
       
       - name: Install Promptfoo
         run: npm install -g promptfoo
-      
+
+      # Informational quality gate: it depends on an external API key and on
+      # non-deterministic LLM grading, so it must not block the PR. It is
+      # skipped entirely when GOOGLE_API_KEY is not configured.
       - name: Run Promptfoo evaluation
-        run: |
-          cd eval
-          npx promptfoo eval -c promptfooconfig.yaml -o results/ci-eval.json --json
+        id: eval
+        continue-on-error: true
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-      
+        run: |
+          if [ -z "$GOOGLE_API_KEY" ]; then
+            echo "::warning::GOOGLE_API_KEY secret not set - skipping RAG evaluation."
+            exit 0
+          fi
+          mkdir -p eval/results
+          cd eval
+          npx promptfoo eval -c promptfooconfig.yaml -o results/ci-eval.json --no-cache
+
       - name: Upload evaluation results
+        if: hashFiles('eval/results/ci-eval.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: eval-results
           path: eval/results/
-      
+
       - name: Comment PR with results
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && hashFiles('eval/results/ci-eval.json') != ''
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const results = JSON.parse(fs.readFileSync('eval/results/ci-eval.json'));
-            
-            const passed = results.results?.filter(r => r.success).length || 0;
-            const total = results.results?.length || 0;
+            const raw = JSON.parse(fs.readFileSync('eval/results/ci-eval.json'));
+            // promptfoo nests results as { results: { results: [...] } } in newer
+            // versions and { results: [...] } in older ones.
+            const cases = raw.results?.results ?? raw.results ?? [];
+            const passed = cases.filter(r => r.success).length;
+            const total = cases.length;
             const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
             
             const body = `## 🧪 RAG Evaluation Results
