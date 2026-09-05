@@ -1,0 +1,211 @@
+# Q&A test matrix for the Nimbus Analytics test corpus.
+#
+# Every expected answer below is grounded in exactly one or two corpus documents,
+# so a passing run proves retrieval + generation are working, not just that the
+# LLM knows something.
+#
+# Field reference:
+#   question          - sent verbatim to POST /api/query
+#   collection        - which collection to query (test_corpus | tenant_acme)
+#   source            - document(s) the answer must come from
+#   category          - what capability this case exercises
+#   keywords_all      - every string must appear in the answer (case-insensitive)
+#   keywords_any      - at least one string must appear
+#   must_not_contain  - none of these may appear (hallucination / leakage guard)
+#   expected_behavior - free-text description for cases scored by a human / rubric
+
+cases:
+  # ---------- Basic factual retrieval ----------
+  - id: overview-what-is
+    question: "What is Nimbus Analytics?"
+    collection: test_corpus
+    source: 01_nimbus_overview.md
+    category: basic-factual
+    keywords_any: ["product analytics", "analytics platform"]
+    keywords_all: ["SaaS"]
+
+  - id: pricing-pro-price
+    question: "How much does the Pro plan cost per month?"
+    collection: test_corpus
+    source: 02_nimbus_pricing.md
+    category: basic-factual
+    keywords_all: ["99"]
+
+  - id: pricing-free-events
+    question: "How many events per month are included on the Free plan?"
+    collection: test_corpus
+    source: 02_nimbus_pricing.md
+    category: table-extraction
+    keywords_any: ["100,000", "100000", "100k"]
+
+  - id: api-auth-header
+    question: "How do I authenticate a request to the Events API?"
+    collection: test_corpus
+    source: 03_nimbus_api_reference.md
+    category: code-block-retrieval
+    keywords_all: ["Bearer"]
+    keywords_any: ["Authorization", "API key", "token"]
+
+  - id: api-batch-limit
+    question: "What is the maximum number of events I can send in one POST /events request?"
+    collection: test_corpus
+    source: 03_nimbus_api_reference.md
+    category: basic-factual
+    keywords_any: ["500"]
+
+  - id: api-rate-limit
+    question: "What is the API rate limit and what happens if I exceed it?"
+    collection: test_corpus
+    source: 03_nimbus_api_reference.md
+    category: multi-fact
+    keywords_all: ["600"]
+    keywords_any: ["429", "Retry-After", "too many requests"]
+
+  - id: security-encryption
+    question: "How is customer data encrypted at rest and in transit?"
+    collection: test_corpus
+    source: 04_nimbus_security.txt
+    category: multi-fact
+    keywords_all: ["AES-256"]
+    keywords_any: ["TLS 1.3", "TLS"]
+
+  - id: security-retention
+    question: "How long is data kept after a workspace is deleted?"
+    collection: test_corpus
+    source: 04_nimbus_security.txt
+    category: basic-factual
+    keywords_any: ["90 days", "ninety days"]
+
+  - id: faq-browsers
+    question: "Which web browsers does Nimbus support?"
+    collection: test_corpus
+    source: 05_nimbus_faq.txt
+    category: basic-factual
+    keywords_any: ["Chrome", "Firefox", "Safari", "Edge"]
+    must_not_contain: ["Internet Explorer is supported"]
+
+  - id: faq-password-reset
+    question: "How long is the password reset link valid for?"
+    collection: test_corpus
+    source: 05_nimbus_faq.txt
+    category: basic-factual
+    keywords_any: ["60 minutes", "sixty minutes", "1 hour", "one hour"]
+
+  - id: pdf-trial-length
+    question: "How long is the free trial and does it need a credit card?"
+    collection: test_corpus
+    source: 07_nimbus_onboarding.pdf
+    category: pdf-retrieval
+    keywords_all: ["14"]
+    keywords_any: ["no credit card", "without a credit card", "no card"]
+
+  - id: pdf-default-timezone
+    question: "What timezone does a new workspace use by default?"
+    collection: test_corpus
+    source: 07_nimbus_onboarding.pdf / 05_nimbus_faq.txt
+    category: pdf-retrieval
+    keywords_any: ["UTC"]
+
+  # ---------- Semantic search (wording differs from the document) ----------
+  - id: semantic-bottlenecks
+    question: "Why are my dashboards loading slowly on a very large workspace?"
+    collection: test_corpus
+    source: 01_nimbus_overview.md
+    category: semantic-search
+    keywords_any: ["50 million", "pre-aggregated", "performance bottlenecks", "wide date ranges"]
+
+  - id: semantic-sso
+    question: "Can employees log in with our corporate identity provider?"
+    collection: test_corpus
+    source: 04_nimbus_security.txt
+    category: semantic-search
+    keywords_any: ["SAML", "SSO", "single sign-on"]
+
+  # ---------- Multi-document synthesis ----------
+  - id: synth-hipaa
+    question: "Is HIPAA compliance available on the Pro plan?"
+    collection: test_corpus
+    source: 04_nimbus_security.txt / 02_nimbus_pricing.md
+    category: faithfulness
+    keywords_any: ["Enterprise", "BAA", "not available", "only"]
+    must_not_contain: ["HIPAA is available on the Pro plan", "yes, hipaa is included"]
+
+  - id: synth-python-sdk-version
+    question: "Which release added the Python SDK, and what date did it ship?"
+    collection: test_corpus
+    source: 06_nimbus_changelog.md
+    category: multi-hop
+    keywords_all: ["v3.1.0"]
+    keywords_any: ["2026-04-08", "April 8, 2026", "April 2026"]
+
+  - id: synth-eu-residency
+    question: "When did EU data residency become available?"
+    collection: test_corpus
+    source: 06_nimbus_changelog.md
+    category: multi-hop
+    keywords_any: ["v3.3.0", "2026-09-02", "September 2, 2026", "September 2026"]
+
+  # ---------- Needle in a haystack ----------
+  - id: needle-aurora
+    question: "What is the internal codename for the Nimbus 2027 UI redesign?"
+    collection: test_corpus
+    source: 08_edge_cases.txt
+    category: needle-retrieval
+    keywords_all: ["Aurora"]
+
+  # ---------- Unicode handling ----------
+  - id: unicode-japanese
+    question: "What Japanese word for analysis is mentioned in the notes?"
+    collection: test_corpus
+    source: 08_edge_cases.txt
+    category: unicode
+    keywords_any: ["分析", "bunseki"]
+
+  # ---------- Out-of-domain / grounding (must refuse) ----------
+  - id: ood-weather
+    question: "What is the weather in Tokyo today?"
+    collection: test_corpus
+    source: none
+    category: out-of-domain
+    expected_behavior: "States the answer is not in the documentation; does not invent a forecast."
+    must_not_contain: ["sunny", "degrees", "rain expected"]
+
+  - id: ood-stock-price
+    question: "What is Nimbus Analytics' current stock price?"
+    collection: test_corpus
+    source: none
+    category: out-of-domain
+    expected_behavior: "Says the documents do not contain this information."
+    must_not_contain: ["$", "per share"]
+
+  - id: ood-ceo
+    question: "Who is the CEO of Nimbus Analytics?"
+    collection: test_corpus
+    source: none
+    category: out-of-domain
+    expected_behavior: "Admits the CEO is not named anywhere in the provided documents."
+
+  # ---------- Collection isolation (multi-tenancy) ----------
+  - id: isolation-acme-in-nimbus
+    question: "What is the company mascot?"
+    collection: test_corpus
+    source: none
+    category: collection-isolation
+    expected_behavior: "Does NOT mention Pip or a red panda; that fact lives only in the tenant_acme collection."
+    must_not_contain: ["red panda", "Pip"]
+
+  - id: isolation-acme-direct
+    question: "What is the company mascot and how much vacation do employees get?"
+    collection: tenant_acme
+    source: acme_handbook.md
+    category: collection-isolation
+    keywords_all: ["red panda"]
+    keywords_any: ["Pip", "25 days"]
+
+  - id: isolation-nimbus-in-acme
+    question: "How much does the Pro plan cost?"
+    collection: tenant_acme
+    source: none
+    category: collection-isolation
+    expected_behavior: "Does NOT return $99; Nimbus pricing is not in the tenant_acme collection."
+    must_not_contain: ["99"]

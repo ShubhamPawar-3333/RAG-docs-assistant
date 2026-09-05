@@ -13,6 +13,7 @@ from langchain_core.output_parsers import StrOutputParser
 
 from src.rag.retrieval import Retriever, create_retriever
 from src.rag.llm import LLMManager
+from src.rag.caching import QueryCache, create_cache
 from config.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -59,6 +60,8 @@ class RAGPipeline:
         temperature: float = None,
         top_k: int = None,
         prompt_template: str = None,
+        cache_enabled: bool = True,
+        cache_ttl: int = 3600,
     ):
         """
         Initialize the RAG pipeline.
@@ -70,6 +73,8 @@ class RAGPipeline:
             temperature: LLM temperature (default from settings).
             top_k: Number of documents to retrieve.
             prompt_template: Custom prompt template.
+            cache_enabled: Whether to enable query caching.
+            cache_ttl: Cache time-to-live in seconds.
         """
         self.collection_name = collection_name
         self.embedding_model = embedding_model
@@ -83,10 +88,49 @@ class RAGPipeline:
         self._llm_manager: Optional[LLMManager] = None
         self._chain = None
         
+        # Initialize query cache
+        self._cache = self._init_cache(enabled=cache_enabled, ttl=cache_ttl)
+        
         logger.info(
             f"Initialized RAGPipeline: collection={collection_name}, "
-            f"model={self.llm_model}, k={self.top_k}"
+            f"model={self.llm_model}, k={self.top_k}, "
+            f"cache={self._cache.backend.__class__.__name__}"
         )
+    
+    def _init_cache(self, enabled: bool = True, ttl: int = 3600) -> QueryCache:
+        """
+        Initialize the query cache.
+        
+        Uses Redis if UPSTASH_REDIS_URL is configured, 
+        otherwise falls back to in-memory cache.
+        """
+        redis_url = settings.upstash_redis_url or ""
+        redis_configured = redis_url.startswith(("redis://", "rediss://", "unix://"))
+        try:
+            if redis_configured:
+                logger.info("Initializing Redis cache (Upstash)")
+                return create_cache(
+                    backend_type="redis",
+                    url=redis_url,
+                    ttl=ttl,
+                    enabled=enabled,
+                )
+            else:
+                if redis_url:
+                    logger.warning(
+                        "UPSTASH_REDIS_URL is set but is not a redis:// URL "
+                        "(got %r); using in-memory cache.", redis_url[:20] + "…"
+                    )
+                logger.info("Initializing in-memory cache")
+                return create_cache(
+                    backend_type="memory",
+                    max_size=1000,
+                    ttl=ttl,
+                    enabled=enabled,
+                )
+        except Exception as e:
+            logger.warning(f"Cache initialization failed, using in-memory fallback: {e}")
+            return create_cache(backend_type="memory", ttl=ttl, enabled=enabled)
     
     @property
     def retriever(self) -> Retriever:
@@ -160,20 +204,26 @@ class RAGPipeline:
         provider: str = "gemini",
     ) -> Dict[str, Any]:
         """
-        Query the RAG pipeline with dynamic retrieval.
+        Query the RAG pipeline with caching and dynamic retrieval.
         
-        Uses a two-stage approach:
-        1. Fetch 20 candidate chunks broadly
-        2. Filter by relevance threshold, keep up to 15
-        
-        This ensures complex questions get more context while
-        simple questions don't get noise.
+        Flow: Cache Check → Broad Retrieval → Reranking → 
+              Relevance Filter → Cap → Generate → Cache Store
         """
         logger.info(f"Processing query: {question[:50]}...")
         
         # API key is required (BYOK-only mode)
         if not api_key:
             raise ValueError("API key is required. Please provide your API key.")
+        
+        # Step 0: Cache check — return immediately if cached
+        cached_result = self._cache.get(
+            query=question,
+            collection_name=self.collection_name,
+        )
+        if cached_result:
+            logger.info(f"Cache hit for query: {question[:50]}...")
+            cached_result["question"] = question
+            return cached_result
         
         # Step 1: Broad retrieval — fetch 20 candidates
         FETCH_K = 20
@@ -226,14 +276,10 @@ class RAGPipeline:
         
         logger.info(f"Generated answer: {len(answer)} characters")
         
-        # Build response
-        response = {
-            "answer": answer,
-            "question": question,
-        }
-        
+        # Build sources list
+        sources = []
         if include_sources:
-            response["sources"] = [
+            sources = [
                 {
                     "content": doc.page_content[:200] + "...",
                     "metadata": doc.metadata,
@@ -244,66 +290,94 @@ class RAGPipeline:
                     retrieval_result.scores or []
                 )
             ]
+        
+        # Step 5: Cache store — save result for future identical queries
+        self._cache.set(
+            query=question,
+            collection_name=self.collection_name,
+            answer=answer,
+            sources=sources,
+        )
+        
+        # Build response
+        response = {
+            "answer": answer,
+            "question": question,
+            "cached": False,
+        }
+        
+        if include_sources:
+            response["sources"] = sources
             response["num_sources"] = retrieval_result.num_results
         
         return response
     
-    def _build_chain_with_key(self, api_key: str, provider: str = "gemini"):
-        """Build a one-time chain with user-provided API key and provider."""
-        from langchain_core.prompts import ChatPromptTemplate
-        from langchain_core.output_parsers import StrOutputParser
-        
-        prompt = ChatPromptTemplate.from_template(self.prompt_template)
-        
+    def _make_llm(self, api_key: str, provider: str = "gemini"):
+        """Instantiate a chat model for the given provider using a BYOK key.
+
+        Model IDs come from settings (env-overridable) because vendors
+        deprecate and rename models frequently.
+        """
         if provider == "gemini":
             from langchain_google_genai import ChatGoogleGenerativeAI
-            llm = ChatGoogleGenerativeAI(
-                model="gemini-2.5-flash",
+            return ChatGoogleGenerativeAI(
+                model=settings.gemini_model,
                 temperature=self.temperature,
                 google_api_key=api_key,
                 convert_system_message_to_human=True,
             )
         elif provider == "openai":
             from langchain_openai import ChatOpenAI
-            llm = ChatOpenAI(
-                model="gpt-4o-mini",
+            return ChatOpenAI(
+                model=settings.openai_model,
                 temperature=self.temperature,
                 api_key=api_key,
             )
         elif provider == "anthropic":
             from langchain_anthropic import ChatAnthropic
-            llm = ChatAnthropic(
-                model="claude-3-haiku-20240307",
+            return ChatAnthropic(
+                model=settings.anthropic_model,
                 temperature=self.temperature,
                 api_key=api_key,
             )
         elif provider == "groq":
             from langchain_groq import ChatGroq
-            llm = ChatGroq(
-                model="llama-3.3-70b-versatile",
+            return ChatGroq(
+                model=settings.groq_model,
                 temperature=self.temperature,
                 api_key=api_key,
             )
         else:
             raise ValueError(f"Unsupported provider: {provider}")
-        
+
+    def _build_chain_with_key(self, api_key: str, provider: str = "gemini"):
+        """Build a one-time chain with user-provided API key and provider."""
+        prompt = ChatPromptTemplate.from_template(self.prompt_template)
+        llm = self._make_llm(api_key, provider)
         return prompt | llm | StrOutputParser()
-    
+
     def stream(
         self,
         question: str,
+        api_key: Optional[str] = None,
+        provider: str = "gemini",
     ) -> Iterator[str]:
         """
         Stream the RAG pipeline response.
-        
+
         Args:
             question: User's question.
-            
+            api_key: User-provided API key (BYOK). Required.
+            provider: LLM provider (gemini, openai, anthropic, groq).
+
         Yields:
             Response chunks as they are generated.
         """
         logger.info(f"Streaming query: {question[:50]}...")
-        
+
+        if not api_key:
+            raise ValueError("API key is required. Please provide your API key.")
+
         # Retrieve context
         retrieval_result = self.retriever.retrieve(
             query=question,
@@ -311,9 +385,10 @@ class RAGPipeline:
             include_scores=False,
         )
         context = retrieval_result.get_context(separator="\n\n---\n\n")
-        
-        # Stream response
-        for chunk in self.chain.stream({
+
+        # Stream response using the caller's key/provider (not the server key)
+        chain = self._build_chain_with_key(api_key, provider)
+        for chunk in chain.stream({
             "context": context,
             "question": question,
         }):
@@ -327,7 +402,15 @@ class RAGPipeline:
             "llm_model": self.llm_model,
             "temperature": self.temperature,
             "top_k": self.top_k,
+            "cache": self._cache.stats(),
         }
+    
+    def invalidate_cache(self, collection_name: Optional[str] = None) -> None:
+        """Invalidate cache entries, optionally for a specific collection."""
+        if collection_name:
+            self._cache.invalidate_collection(collection_name)
+        else:
+            self._cache.backend.clear()
 
 
 class RAGPipelineBuilder:

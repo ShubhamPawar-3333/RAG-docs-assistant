@@ -44,8 +44,13 @@ def get_langfuse():
             secret_key=settings.langfuse_secret_key,
             host=settings.langfuse_host,
         )
-        _langfuse_enabled = True
-        logger.info(f"Langfuse initialized: {settings.langfuse_host}")
+        # Verify connection
+        if _langfuse_client.auth_check():
+            _langfuse_enabled = True
+            logger.info(f"Langfuse v4 initialized: {settings.langfuse_host}")
+        else:
+            _langfuse_enabled = False
+            logger.warning("Langfuse auth check failed")
         return _langfuse_client
     except ImportError:
         logger.warning("Langfuse package not installed")
@@ -279,20 +284,21 @@ def get_langfuse_callback_handler():
     Get a LangChain callback handler for Langfuse.
     
     Returns None if Langfuse is not configured.
+    Langfuse v4 reads credentials from environment variables:
+    LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST
     """
     if not is_langfuse_enabled():
         return None
     
     try:
-        from langfuse.callback import CallbackHandler
+        from langfuse.langchain import CallbackHandler
         
-        return CallbackHandler(
-            public_key=settings.langfuse_public_key,
-            secret_key=settings.langfuse_secret_key,
-            host=settings.langfuse_host,
-        )
+        # v4: credentials are read from env vars automatically
+        handler = CallbackHandler()
+        logger.info("Created Langfuse LangChain callback handler (v4)")
+        return handler
     except ImportError:
-        logger.warning("Langfuse callback handler not available")
+        logger.warning("Langfuse LangChain callback handler not available")
         return None
     except Exception as e:
         logger.error(f"Failed to create callback handler: {e}")

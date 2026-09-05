@@ -1,0 +1,76 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 998 >>
+stream
+BT
+/F1 12 Tf
+16 TL
+72 720 Td
+(Nimbus Analytics - Onboarding Guide) Tj
+T*
+() Tj
+T*
+(Every new workspace starts with a 14-day free trial of the Pro plan.) Tj
+T*
+(No credit card is required to start the trial.) Tj
+T*
+() Tj
+T*
+(Setup steps:) Tj
+T*
+(Step 1: Create your workspace and name your first project.) Tj
+T*
+(Step 2: Install an SDK or paste the tracking snippet into your page <head>.) Tj
+T*
+(Step 3: Open Live View and confirm your first events are arriving.) Tj
+T*
+(Step 4: Invite your teammates from Workspace settings > Members.) Tj
+T*
+(Step 5: Build your first dashboard from a template.) Tj
+T*
+() Tj
+T*
+(Default settings for a new workspace:) Tj
+T*
+(- Timezone: UTC) Tj
+T*
+(- Session timeout: 30 minutes) Tj
+T*
+(- Default plan after trial: Free \(unless you add a payment method\)) Tj
+T*
+() Tj
+T*
+(Onboarding support:) Tj
+T*
+(Email onboarding@nimbusanalytics.com or join office hours every Tuesday.) Tj
+T*
+(A dedicated onboarding manager is assigned to Enterprise customers only.) Tj
+T*
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1360
+%%EOF

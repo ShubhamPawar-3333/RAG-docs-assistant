@@ -68,6 +68,10 @@ class QueryResponse(BaseModel):
         None,
         description="Number of sources used"
     )
+    cached: bool = Field(
+        default=False,
+        description="Whether this response was served from cache"
+    )
 
 
 # ============== Ingest Models ==============
