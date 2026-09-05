@@ -331,11 +331,60 @@ docs/explanations/loaders.md   correct the SUPPORTED_EXTENSIONS example + note
 `pytest` — **78 passed**. (Three `scripts/test_e2e.py` collection errors are pre-existing:
 pytest mis-collects that script's helper functions as tests; unrelated to this change.)
 
-## Follow-ups (not in this change)
+Full acceptance run (`scripts/run_corpus_test.py`, Groq / `openai/gpt-oss-120b`): **29/29**.
+
+---
+
+## Follow-on fixes (same branch, found by running the acceptance test)
+
+### Groq model was decommissioned
+
+`pipeline._build_chain_with_key` hard-coded `llama-3.3-70b-versatile`, which Groq has
+retired — every Groq query returned HTTP 500 (`model_not_found`). Per-provider model IDs
+are now settings (`GEMINI_MODEL` / `OPENAI_MODEL` / `ANTHROPIC_MODEL` / `GROQ_MODEL`),
+default `groq_model = openai/gpt-oss-20b`. `_build_chain_with_key` and a new `_make_llm`
+helper read them.
+
+### Streaming ignored the BYOK key
+
+`/api/query/stream` → `pipeline.stream()` used `self.chain` (server key), so streaming
+always failed under BYOK. `stream()` now takes `api_key` / `provider` and builds the chain
+the same way `query()` does.
+
+### Provider errors collapsed to 500
+
+`/api/query` now maps: **429** RateLimited, **401** InvalidAPIKey, **400** MissingAPIKey,
+**502** ModelUnavailable (model_not_found) — instead of a blanket 500.
+
+### Redis cache noise
+
+A placeholder `UPSTASH_REDIS_URL` made every query attempt (and fail) a Redis connection.
+`_init_cache` now checks for a real `redis://` / `rediss://` / `unix://` scheme first.
+
+### Streamlit source panel invisible
+
+Source snippets rendered near-white on the near-white `.source-card` under the pinned dark
+theme ("shows white only"). Replaced the injected HTML with native `st.container`
+components (`render_sources`); removed the unused/broken CSS classes.
+
+### CI
+
+- `ruff.toml` pins the lint rule set to the classic default (`E4/E7/E9/F`); ruff 0.16
+  broadened its defaults and had been silently failing the lint job. `ruff` pinned to
+  `>=0.16,<0.17` in CI.
+- `eval/promptfooconfig.yaml`: `google:gemini-2.5-flash` provider id, Gemini grader for
+  `llm-rubric`, dropped the literal `${GOOGLE_API_KEY}` and the invalid `relevance` assert.
+- The RAG-evaluation job is `continue-on-error` and skips cleanly when `GOOGLE_API_KEY`
+  is not configured (it is informational, like the `mypy` step).
+
+---
+
+## Follow-ups (still open)
 
 1. Background-job ingestion (`202` + `job_id` + polling) for large uploads.
 2. Move rate limiting to Upstash Redis; make it worker-consistent.
-3. `pipeline.stream()` ignores the BYOK `api_key` / `provider` and uses the server key —
-   streaming fails when no server key is set. Needs the same key-plumbing as `pipeline.query()`.
+3. `pipeline.query()` still ignores the request `top_k` (hard-coded FETCH_K=20 / cap 15).
 4. Consider replacing the three stacked `BaseHTTPMiddleware` classes with pure ASGI
    middleware (they buffer full request/response bodies).
+5. Add the `GOOGLE_API_KEY` repo secret so the RAG-evaluation job actually runs.
+6. Broaden the ruff rule set (`I`, `UP`, `B`) and fix the ~280 pre-existing style findings.
